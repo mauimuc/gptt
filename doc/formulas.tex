@@ -1,9 +1,12 @@
 \documentclass{article}
 
 \usepackage[T1]{fontenc}
+\usepackage[a4paper]{geometry}
+
 \usepackage{amssymb}
 \usepackage{mathtools}
-\usepackage[a4paper]{geometry}
+\usepackage{hyperref}
+
 \newcommand{\mypath}{.}
 
 \title{Formulas}
@@ -15,11 +18,38 @@
     Just a summary of formulas I use \dots
 \end{abstract}
 
-\section{Parametric expression along a great circle}
+\section{Great Circle Distance}
+The shortest distance between two points $s$, $t$ on the surface of a sphere is given by
+\begin{equation}
+    d = r \sphericalangle_s^t
+\end{equation}
+where $\sphericalangle$ is termed central angle and $r$ is the radius.
+The central angle is given by
+\begin{equation}
+    \cos \sphericalangle_s^t = \frac{s \cdot t}{|s||t|}
+\end{equation}
+and the inner product in spherical coordinates reads
+\begin{equation}
+    s \cdot t =
+|s||t| \left( \sin \theta_s \sin \theta_t \cos (\phi_s - \phi_t) + \cos \theta_s \cos \theta_t \right )
+    \; .
+\end{equation}
+where $\varphi$ refers to longitude and $\theta$ to co-latitude.
+References: \url{https://en.wikipedia.org/wiki/Great-circle_distance} and \url{https://en.wikipedia.org/wiki/Spherical_law_of_cosines}
 
-Consider two points $s$ and $r$ located at the Earth's surface.
+\section{Great Circle Path}
+Parametric expression along a great circle
+Consider two points $s$ and $t$ located at the Earth's surface.
 Required is an equation parametrizing the grate circle passing through $s$ and $r$.
 
+
+\section{Gaussian Kernel}
+The great circle distance shall serve as metric.
+Te Gaussian kernel is given by
+\begin{equation}
+    K(OC\mathbf {x} ,\mathbf {x'})   =
+    \exp \left(-{\frac {\|\mathbf {x} -\mathbf {x'} \|^{2}}{2\sigma ^{2}}}\right)
+\end{equation}
 
 
 \end{document}
