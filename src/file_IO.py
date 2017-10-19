@@ -13,6 +13,6 @@ from gptt import dt_latlon
 def read_station_file(fname):
     ''' Extract latitude and longitude from station file.
         A structure array is returned. '''
-    return np.genfromtxt(fname, dtype=dt_latlon, usecols=(1, 2))
+    return np.genfromtxt(fname, dtype=dt_latlon, usecols=(1, 2))[::2]
 
 

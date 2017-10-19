@@ -13,7 +13,7 @@ from example import c_act
 
 
 # Read coordinates of the NORSA Array
-stations = read_station_file('../dat/stations.dat')[::2]
+stations = read_station_file('../dat/stations.dat')
 
 plt.figure(figsize=(10,10))
 lllon = stations['lon'].min() - 1

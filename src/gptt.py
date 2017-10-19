@@ -8,14 +8,15 @@ __license__   = "GPLv3"
 ''' Module to store routines for Bayesian surface wave tomography '''
 
 import numpy as np
-from abc import ABCMeta, abstractmethod, abstractproperty
 
+# Structured arrays to hold coordinates
 dt_latlon = np.dtype( [('lat', 'float'), ('lon', 'float')] )
 dt_xyz = np.dtype( [('x', 'float'), ('y', 'float'), ('z', 'float')] )
 dt_rtp = np.dtype( [('r', 'float'), ('t', 'float'), ('p', 'float')] )
 
 
 def to_latlon(crd):
+    ''' Transform intro latitude and longitude (degrees) '''
     dtype = np.result_type(crd)
     res = np.empty_like(crd, dtype=dt_latlon)
     if dtype == dt_latlon:
@@ -49,6 +50,7 @@ def to_rtp(crd, r=6371000):
     return res
 
 def to_xyz(crd, r=6371000):
+    ''' Transform intro Cartesian coordinates '''
     dtype = np.result_type(crd)
     res = np.empty_like(crd, dtype=dt_xyz)
     if dtype == dt_latlon:
@@ -73,120 +75,51 @@ def _inner(crd1, crd2):
     b = to_xyz(crd2)
     return a['x']*b['x'] + a['y']*b['y'] + a['z']*b['z']
 
+
 def great_circle_distance(crd1, crd2):
     r1 = to_rtp(crd1)['r']
     r2 = to_rtp(crd2)['r']
-    cos_sigma = _inner(crd1, crd2)/r1/r2
+    cos_sigma = cos_central_angle(crd1, crd2)
+    # XXX Due to rounding errors cos_sigma > 1 -> NaN
+    cos_sigma[cos_sigma>1.] = 1.
     return np.arccos(cos_sigma)*np.sqrt(r1*r2)
 
+def cos_central_angle(crd1, crd2):
+    r1 = to_rtp(crd1)['r']
+    r2 = to_rtp(crd2)['r']
+    return _inner(crd1, crd2)/r1/r2
 
+def great_circle_path(u, v, t):
+    cos_sigma = cos_central_angle(u, v)
+    sin_sigma = np.sqrt(1 - cos_sigma**2)
+    u = to_xyz(u)
+    v = to_xyz(v)
+    ux, uy, uz = u['x'], u['y'], u['z']
+    vx, vy, vz = v['x'], v['y'], v['z']
+    wx = (vx - ux*cos_sigma)/sin_sigma
+    wy = (vy - uy*cos_sigma)/sin_sigma
+    wz = (vz - uz*cos_sigma)/sin_sigma
+    tx = ux*np.cos(t) + wx*np.sin(t)
+    ty = uy*np.cos(t) + wy*np.sin(t)
+    tz = uz*np.cos(t) + wz*np.sin(t)
+    return np.rec.fromarrays( (tx, ty, tz), dtype=dt_xyz)
 
-class Point(object):
-    __metaclass__ = ABCMeta
-    @abstractmethod
-    def __init__(self): pass
-    @abstractproperty
-    def x(self): pass
-    @abstractproperty
-    def y(self): pass
-    @abstractproperty
-    def z(self): pass
-    @abstractproperty
-    def r(self): pass
-    @abstractproperty
-    def t(self): pass
-    @abstractproperty
-    def p(self): pass
-    @property
-    def lat(self):
-        return 90 - self.t*180/np.pi
-    @property
-    def lon(self):
-        return self.p*180/np.pi
-    def __repr__(self):
-        return 'lat=%f lon=%f' % (self.lat, self.lon)
+def line_element(u, v, t):
+    cos_sigma = cos_central_angle(u, v)
+    sin_sigma = np.sqrt(1 - cos_sigma**2)
+    u = to_xyz(u)
+    v = to_xyz(v)
+    ux, uy, uz = u['x'], u['y'], u['z']
+    vx, vy, vz = v['x'], v['y'], v['z']
+    wx = (vx - ux*cos_sigma)/sin_sigma
+    wy = (vy - uy*cos_sigma)/sin_sigma
+    wz = (vz - uz*cos_sigma)/sin_sigma
+    tx = wx*np.cos(t) - ux*np.sin(t)
+    ty = wy*np.cos(t) - uy*np.sin(t)
+    tz = wz*np.cos(t) - uz*np.sin(t)
+    return np.sqrt(tx**2 + ty**2 + tz**2)
 
-class Point_latlon(Point):
-    def __init__(self, lat, lon, rad=6371000):
-        self._lat = lat
-        self._lon = lon
-        self._rad = rad
-    @property
-    def r(self):
-        return float(self._rad)
-    @property
-    def t(self):
-        return (90-self._lat)*np.pi/180
-    @property
-    def p(self):
-        return self._lon*np.pi/180
-    @property
-    def x(self):
-        return self.r*np.sin(self.t)*np.cos(self.p)
-    @property
-    def y(self):
-        return self.r*np.sin(self.t)*np.sin(self.p)
-    @property
-    def z(self):
-        return self.r*np.cos(self.t)
-
-class Point_xyz(Point):
-    def __init__(self, x, y, z):
-        self._x = x
-        self._y = y
-        self._z = z
-    @property
-    def r(self):
-        return np.sqrt(self._x**2 + self._y**2 + self._z**2)
-    @property
-    def t(self):
-        return np.arccos(self._z/self.r)
-    @property
-    def p(self):
-        return np.arctan2(self._y, self._x)
-    @property
-    def x(self):
-        return self._x
-    @property
-    def y(self):
-        return self._y
-    @property
-    def z(self):
-        return self._z
-
-def inner(p1, p2):
-    return p1.x*p2.x + p1.y*p2.y + p1.z*p2.z
-
-def outer(p1, p2):
-    x = p1.y*p2.z - p1.z*p2.y
-    y = p1.z*p2.x - p1.x*p2.z
-    z = p1.x*p2.y - p1.y*p2.x
-    return Point_xyz(x, y, z)
-
-
-class PointPair(object):
-    def __init__(self, p1, p2):
-        self.p1 = p1
-        self.p2 = p2
-
-    @property
-    def cos_central_angle(self):
-        return inner(self.p1, self.p2)/self.p1.r/self.p2.r
-    @property
-    def sin_central_angle(self):
-        return outer(self.p1, self.p2).r/self.p1.r/self.p2.r
-    @property
-    def central_angle(self):
-        return np.arccos(self.cos_central_angle)
-
-    def great_circle(self, t):
-        w_x = (self.p2.x - self.p1.x*self.cos_central_angle)/self.sin_central_angle
-        w_y = (self.p2.y - self.p1.y*self.cos_central_angle)/self.sin_central_angle
-        w_z = (self.p2.z - self.p1.z*self.cos_central_angle)/self.sin_central_angle
-        t_x = self.p1.x*np.cos(t) + w_x*np.sin(t)
-        t_y = self.p1.y*np.cos(t) + w_y*np.sin(t)
-        t_z = self.p1.z*np.cos(t) + w_z*np.sin(t)
-        return t_x, t_y, t_z
-
-
+def gauss_kernel(crd1, crd2, sigma):
+    d = great_circle_distance(crd1, crd2)
+    return np.exp(-d**2/sigma)
 
