@@ -13,11 +13,17 @@ from example import c_act
 from gptt import dt_latlon, cos_central_angle, great_circle_path, to_latlon, gauss_kernel, line_element
 from scipy.integrate import simps
 
+#Options
+params = {'text.usetex' : True,
+          'font.size' : 9,
+          'pgf.rcfonts': False, }
+plt.rcParams.update(params)
+
 
 # Read coordinates of the NORSA Array
 stations = read_station_file('../dat/stations.dat')
 
-plt.figure(figsize=(10,10))
+plt.figure(figsize=(4, 4))
 lllon = stations['lon'].min() - 1
 lllat = stations['lat'].min() - 0.5
 urlon = stations['lon'].max() + 1
@@ -41,12 +47,18 @@ le12 = line_element(st1, st2, t12)
 pt12 = to_latlon(great_circle_path(st1, st2, t12))
 m.plot(pt12['lon'], pt12['lat'], '-x', latlon=True)
 
+
 # Make a lat lon grid with extent of the map
-grid = np.rec.fromarrays(np.mgrid[lllat:urlat:50j, lllon:urlon:50j], dtype=dt_latlon)
+grid = np.rec.fromarrays(np.mgrid[lllat:urlat:150j, lllon:urlon:150j], dtype=dt_latlon)
+# Correlations amongst great circle segment and grid
+K = gauss_kernel(pt12.reshape((-1,1,1)), grid, 20000**2)
+# Integrate travel time
+cor_TC = simps(K, t12, axis=0)
+# Plot correlation kernel; pcolor needs points in between
+lat, lon = np.mgrid[lllat:urlat:151j, lllon:urlon:151j]
+m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='Reds', rasterized=True)
+#m.imshow(cor_TC)
 
-K = gauss_kernel(pt12[:,np.newaxis], grid.flatten()[np.newaxis,:], 20000**2)
-cor_TC = simps(K*le12[:,np.newaxis], t12, axis=0)
-# Plot correlation kernel
-m.imshow(cor_TC.reshape(grid.shape))
+plt.savefig('../doc/correlation.pgf', transparent=True, \
+            bbox_inches='tight', pad_inches=0.01)
 
-plt.show()

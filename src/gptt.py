@@ -10,9 +10,10 @@ __license__   = "GPLv3"
 import numpy as np
 
 # Structured arrays to hold coordinates
-dt_latlon = np.dtype( [('lat', 'float'), ('lon', 'float')] )
-dt_xyz = np.dtype( [('x', 'float'), ('y', 'float'), ('z', 'float')] )
-dt_rtp = np.dtype( [('r', 'float'), ('t', 'float'), ('p', 'float')] )
+dt_float = np.float32
+dt_latlon = np.dtype( [('lat', dt_float), ('lon', dt_float)] )
+dt_xyz = np.dtype( [('x', dt_float), ('y', dt_float), ('z', dt_float)] )
+dt_rtp = np.dtype( [('r', dt_float), ('t', dt_float), ('p', dt_float)] )
 
 
 def to_latlon(crd):
@@ -22,17 +23,17 @@ def to_latlon(crd):
     if dtype == dt_latlon:
         res = crd
     elif dtype == dt_rtp:
-        res['lat'] = 90 - np.rad2deg(crd['t'])
+        res['lat'] = 90. - np.rad2deg(crd['t'])
         res['lon'] = np.rad2deg(crd['p'])
     elif dtype == dt_xyz:
         r = np.sqrt(crd['x']**2 + crd['y']**2 + crd['z']**2)
         res['lon'] = np.rad2deg(np.arctan2(crd['y'], crd['x']))
-        res['lat'] = 90 - np.rad2deg(np.arccos(crd['z']/r))
+        res['lat'] = 90. - np.rad2deg(np.arccos(crd['z']/r))
     else:
         raise NotImplementedError
     return res
 
-def to_rtp(crd, r=6371000):
+def to_rtp(crd, r=6371000.):
     dtype = np.result_type(crd)
     res = np.empty_like(crd, dtype=dt_rtp)
     if dtype == dt_latlon:
@@ -49,7 +50,7 @@ def to_rtp(crd, r=6371000):
         raise NotImplementedError
     return res
 
-def to_xyz(crd, r=6371000):
+def to_xyz(crd, r=6371000.):
     ''' Transform intro Cartesian coordinates '''
     dtype = np.result_type(crd)
     res = np.empty_like(crd, dtype=dt_xyz)
@@ -81,7 +82,7 @@ def great_circle_distance(crd1, crd2):
     r2 = to_rtp(crd2)['r']
     cos_sigma = cos_central_angle(crd1, crd2)
     # XXX Due to rounding errors cos_sigma > 1 -> NaN
-    cos_sigma[cos_sigma>1.] = 1.
+    cos_sigma = np.where(cos_sigma>1., 1., cos_sigma)
     return np.arccos(cos_sigma)*np.sqrt(r1*r2)
 
 def cos_central_angle(crd1, crd2):
@@ -121,5 +122,5 @@ def line_element(u, v, t):
 
 def gauss_kernel(crd1, crd2, sigma):
     d = great_circle_distance(crd1, crd2)
-    return np.exp(-d**2/sigma)
+    return np.exp(-d**2/sigma, dtype=dt_float)
 
