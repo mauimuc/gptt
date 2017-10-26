@@ -3,9 +3,9 @@
 formulas.pdf: formulas.tex fig_path_coverage.pgf fig_correlation.pgf
 	pdflatex formulas
 
-fig_path_coverage.pgf: ./src/fig_path_coverage.py
+fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/plotting.py
 	cd src; python fig_path_coverage.py
 
-fig_correlation.pgf: ./src/fig_correlation.py
+fig_correlation.pgf: ./src/fig_correlation.py ./src/plotting.py
 	cd src; python fig_correlation.py
 
