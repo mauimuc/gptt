@@ -59,6 +59,5 @@ lat, lon = np.mgrid[lllat:urlat:151j, lllon:urlon:151j]
 m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='Reds', rasterized=True)
 #m.imshow(cor_TC)
 
-plt.savefig('../doc/correlation.pgf', transparent=True, \
-            bbox_inches='tight', pad_inches=0.01)
+plt.savefig('../fig_correlation.pgf', transparent=True, bbox_inches='tight', pad_inches=0.01)
 

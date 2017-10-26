@@ -58,6 +58,5 @@ cbar = m.colorbar(location='right', pad="5%")
 ticks = np.linspace(3950, 4050, 5)
 cbar.set_ticks(ticks)
 cbar.set_label(r'$\frac ms$', rotation='horizontal')
-plt.savefig('../doc/setting.pgf', transparent=True, \
-            bbox_inches='tight', pad_inches=0.01)
+plt.savefig('../fig_path_coverage.pgf', transparent=True, bbox_inches='tight', pad_inches=0.01)
 #plt.show()

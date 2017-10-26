@@ -2,4 +2,6 @@
 *.log
 *.toc
 *.out
+*.pgf
+*.png
 
