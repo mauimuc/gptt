@@ -23,10 +23,9 @@ def c_act(crd):
 
 if __name__ == '__main__':
     from file_IO import read_station_file
-    from gptt import cos_central_angle, gauss_kernel, great_circle_path, line_element, dt_xyz, to_xyz
+    from gptt import cos_central_angle, gauss_kernel, great_circle_path, line_element, dt_xyz, to_xyz, r_E
     from scipy.integrate import simps
 
-    R_EAR = 6371000.
 
     # Read coordinates of the NORSAR Array
     stations = read_station_file('../dat/stations.dat')
@@ -80,8 +79,8 @@ if __name__ == '__main__':
         c12 = c[slc] # Velocity along the path
         mu_C12 = mu_C[slc] # Prior velocity
         t12 = ts[slc] # Discretization
-        T12[...] = simps(R_EAR/c12, t12) # Actual travel time
-        mu_T12_pri[...] = simps(R_EAR/mu_C12, t12) # Prior travel time
+        T12[...] = simps(r_E/c12, t12) # Actual travel time
+        mu_T12_pri[...] = simps(r_E/mu_C12, t12) # Prior travel time
 
     epsilon = 0.01
 
@@ -95,12 +94,12 @@ if __name__ == '__main__':
         for i in range(index.size):
             slc_i = slice(index[i], index[i] + npts[i], 1) # Slice
             t_i = ts[slc_i] # Discretization
-            mu_D[i] = simps(R_EAR/mu_C[slc_i], t_i) # travel time
-            cor = -simps(cov_CC[:-N**2,slc_i]*R_EAR/mu_C[slc_i]**2, t_i, axis=-1)
+            mu_D[i] = simps(r_E/mu_C[slc_i], t_i) # travel time
+            cor = -simps(cov_CC[:-N**2,slc_i]*r_E/mu_C[slc_i]**2, t_i, axis=-1)
             for j in range(i, index.size):
                 slc_j = slice(index[j], index[j] + npts[j], 1) # Slice
                 t_j = ts[slc_j] # Discretization
-                cov = -simps(cor[slc_j]*R_EAR/mu_C[slc_j]**2, t_j, axis=-1)
+                cov = -simps(cor[slc_j]*r_E/mu_C[slc_j]**2, t_j, axis=-1)
                 cov_DD[i,j] = cov
                 if i!=j:
                     cov_DD[j,i] = cov
@@ -116,11 +115,11 @@ if __name__ == '__main__':
         a+=1
         slc = slice(i,i+n,1) # Slice
         t12 = ts[slc] # Discretization
-        mu_T12 = simps(R_EAR/mu_C[slc], t12) # Prior travel time
+        mu_T12 = simps(r_E/mu_C[slc], t12) # Prior travel time
         # Correlations amongst model and travel times
-        cor_CT = -simps(cov_CC[:,slc]*R_EAR/mu_C[slc]**2, t12, axis=-1).astype(dt_float)
+        cor_CT = -simps(cov_CC[:,slc]*r_E/mu_C[slc]**2, t12, axis=-1).astype(dt_float)
         # Prior variance
-        var_TT = -simps(cor_CT[slc]*R_EAR/mu_C[slc]**2, t12, axis=-1)
+        var_TT = -simps(cor_CT[slc]*r_E/mu_C[slc]**2, t12, axis=-1)
         var_DD = var_TT + epsilon**2 # Noise level
 
         # Update posterior mean
