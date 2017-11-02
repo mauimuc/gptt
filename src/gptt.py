@@ -9,6 +9,8 @@ __license__   = "GPLv3"
 
 import numpy as np
 
+r_E = 6371000.
+
 # Structured arrays to hold coordinates
 dt_float = np.float32
 dt_latlon = np.dtype( [('lat', dt_float), ('lon', dt_float)] )
@@ -33,7 +35,7 @@ def to_latlon(crd):
         raise NotImplementedError
     return res
 
-def to_rtp(crd, r=6371000.):
+def to_rtp(crd, r=r_E):
     dtype = np.result_type(crd)
     res = np.empty_like(crd, dtype=dt_rtp)
     if dtype == dt_latlon:
@@ -50,7 +52,7 @@ def to_rtp(crd, r=6371000.):
         raise NotImplementedError
     return res
 
-def to_xyz(crd, r=6371000.):
+def to_xyz(crd, r=r_E):
     ''' Transform intro Cartesian coordinates '''
     dtype = np.result_type(crd)
     res = np.empty_like(crd, dtype=dt_xyz)
