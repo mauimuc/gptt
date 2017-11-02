@@ -120,7 +120,7 @@ def line_element(u, v, t):
     tz = wz*np.cos(t) - uz*np.sin(t)
     return np.sqrt(tx**2 + ty**2 + tz**2)
 
-def gauss_kernel(crd1, crd2, sigma):
+def gauss_kernel(crd1, crd2, ell):
     d = great_circle_distance(crd1, crd2)
-    return np.exp(-d**2/sigma, dtype=dt_float)
+    return np.exp(-(d/ell)**2).astype(dt_float)
 

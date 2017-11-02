@@ -13,6 +13,7 @@ from file_IO import read_station_file
 #Options
 params = {'text.usetex' : True,
           'font.size' : 9,
+          'pgf.texsystem' : 'pdflatex',
           'pgf.rcfonts': False, }
 plt.rcParams.update(params)
 
@@ -30,6 +31,6 @@ m = Basemap(llcrnrlon=lllon, llcrnrlat=lllat, urcrnrlon=urlon, urcrnrlat=urlat,\
             lat_0=65, lon_0=17, lat_ts=50)
 m.drawcoastlines(color='gray', linewidth=0.5)
 m.drawparallels((65,69), labels=[1,0,0,0], linewidth=0.5, dashes=(2,2))
-m.drawmeridians(range(10,30,5), labels=[0,0,0,1], linewidth=0.5, dashes=(2,2))
+m.drawmeridians((15,20), labels=[0,0,1,0], linewidth=0.5, dashes=(2,2))
 
 

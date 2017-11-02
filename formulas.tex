@@ -1,9 +1,10 @@
 \documentclass[11pt]{article}
 
 \usepackage[utf8]{inputenc}
-\usepackage[a4paper, margin=2cm]{geometry}
+\usepackage[a4paper, margin=3cm]{geometry}
 \usepackage{amssymb}
 \usepackage{mathtools}
+\usepackage{xfrac}
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{color}
@@ -21,6 +22,7 @@
 \end{abstract}
 
 \section{Setting}
+\input{def_example}
 
 The idea in my mind is to use ambient noise records for surface wave tomography.
 Average slownesses amongst stations are obtained from cross correlations.
@@ -29,9 +31,10 @@ Diffraction is neglected to simplify things even further.
 Then, the ray path between stations is approximated by a great circle segment.
 Travel times amongst stations are given by distances divided by average slowness.
 
-To proceed with a partly realistic setting the station geometry is borrowed from the NORSA Array.
-The reference model is of constant velocity $4\frac{km}s$ perturbed by two blobs.
-Those blobs are showing a deviation of $40$ and $-60$ at their maximum and a characteristic length of $65\,km$ and $40\,km$.
+To proceed with a partly realistic setting the station geometry is borrowed from the NORSAR Array.
+\worries{Due to memory limitations I just consider a subset of \SFWnobs\ stations.}
+The reference model $\tilde C$ is of constant velocity $4\,\sfrac{km}s$ perturbed by two blobs.
+At their maximum those blobs are showing a deviation of about $\pm 50\,\sfrac ms$ and a characteristic length of about $50\,km$.
 Figure~\ref{fig:path_coverage} depicts the reference velocity model with the path coverage atop.
 
 \begin{figure}
@@ -82,20 +85,31 @@ The length of a line element on a great circle is given by
     \; .
 \end{equation}
 
+
 \section{Discretization}
 
-To integrate travel times a fixed samples quadrature scheme shall be used.
-It is necessary to discretize the great circle segment of all pairs of stations.
-An equal spacing is used and the approximate increment is a third of the smallest central angle.
-Simpson's rule is used for numeric integration.
-\worries{That discretization comes with quite a number of duplicates.
-It were enough to consider station locations just once.}
+As we do not consider diffraction an adoptive discretization is not needed.
+To integrate travel times Simpson's rule is used, a fixed samples quadrature scheme.
+Therefore, it is necessary to discretize the great circle segment for all station pairs.
+All segments are sampled at almost the same spacing.
+The increment is chosen as
+\begin{equation}
+    \Delta\sphericalangle = \frac 1 \SFWminsamples \min\left\{ \sphericalangle_u^v \mid u,v \in S \right\}
+    \approx \SFWdeltaangle \,{}^\circ
+\end{equation}
+i.e.~a portion of the shortest inter-station distance.
+
+For plotting purposes only, there is a regular $\SFWngrid \times \SFWngrid$ grid covering the domain of interest.
+
+\worries{My implementation comes with quite a number of duplicates.
+In total I am considering $\SFWnpts$ grid points.
+It were enough to consider station locations just once saving 360 points.}
 
 
 \section{Correlation Kernel}
 
 Typically, the Gaussian kernel is expressed in terms of the euclidean distance.
-As we assume surface waves the great circle segment is the desired measure of distance.
+As we consider waves traveling along the surface only, the great circle segment is the desired measure of distance.
 At the surface, the shortest distance between two points $u$, $v$ is given by
 \begin{equation}
     d(u,v) = \sphericalangle_u^v r_E
@@ -106,31 +120,72 @@ The so called great circle distance $d$ shall serve as metric and the correlatio
     K(u,v) = \tau^2 \exp\!\left(-\frac 12 \frac{d(u,v)^2}{\ell^2}\right)
 \end{equation}
 with characteristic length $\ell$ and variance $\tau^2$.
-That Kernel has an upper and lower bound
-\begin{equation}
-    1 \geq K(x_i,x_j) \geq \tau^2 e^{-\frac12\frac{R^2\pi^2}{\ell^2}} > 0
-\end{equation}
-To proof $K$ is PD consider arbitrary wights $\alpha_i \in \mathbb R$ and locations $x_i \in \mathbb S_{r_E}$ and we have
-\begin{equation}
-    \sum_{ij} \alpha_i K(x_i, x_j) \alpha_j >
-    \varepsilon \sum_{ij} \alpha_i \alpha_j =
-    \varepsilon \sum_i 1 \alpha_i \sum_j 1 \alpha_j =
-    \langle 1,\alpha \rangle^2 > 0
-\end{equation}
-where $\varepsilon$ refers to the lower bound of $K$.
+%That Kernel has an upper and lower bound
+%\begin{equation}
+%    1 \geq K(x_i,x_j) \geq \tau^2 e^{-\frac12\frac{R^2\pi^2}{\ell^2}} > 0
+%\end{equation}
+%To proof $K$ is PD consider arbitrary wights $\alpha_i \in \mathbb R$ and locations $x_i \in \mathbb S_{r_E}$ and we have
+%\begin{equation}
+%    \sum_{ij} \alpha_i K(x_i, x_j) \alpha_j >
+%    \varepsilon \sum_{ij} \alpha_i \alpha_j =
+%    \varepsilon \sum_i 1 \alpha_i \sum_j 1 \alpha_j =
+%    \langle 1,\alpha \rangle^2 > 0
+%\end{equation}
+%where $\varepsilon$ refers to the lower bound of $K$.
 
+\worries{Matthias suggested to use a Poisson type kernel.
+\begin{equation}
+    u(x) \propto \iint \frac{R-|x|}{|x-\xi|^3} u(\xi) \, \mathrm d \xi
+\end{equation}
+Consider white noise at some reference radius $R$ and the covariance is
+\begin{equation}
+    K(x,y) \propto \iint \frac{R-|x|}{|x-\xi|^3} \frac{R-|y|}{|y-\xi|^3} \, \mathrm d \xi
+\end{equation}
+the choice of $R$ determines the regularity. }
 
-\section{A priori Model}
-\dots
 
 \begin{figure}
+    \input{def_correlation}
     \centering
     \input{fig_correlation.pgf}
-    \caption{Correlation amongst velocity model and travel time observation.
-            \worries{for a constant velocity} }
+    \caption{Correlation amongst a constant velocity model and a travel time observation.
+        The kernel's characteristic length is $\ell=\SFWcorrell\,m$ and the path discretization is $\Delta = \SFWcorrds\,{}^\circ$. }
     \label{fig:correlation}
 \end{figure}
 
+
+\section{A\,Priori Model}
+
+Let assume an a\,priori model of constant mean velocity.
+Then, four parameters need to be determined before any inversion may be carried out.
+That are the error level $\varepsilon$ and the kernels characteristic length $\tau$, variance $\sigma$ and mean velocity $\mu_C$.
+\worries{For now I pass on that \dots }
+
+The values I use are
+\begin{align}
+    \varepsilon &= \SFWepsilon \, s \;,&
+    \tau &= \SFWtau \, \sfrac ms \;,&
+    \ell &= \SFWell \, m \;,&
+    \mu_C &= \SFWmuCpri \, \sfrac ms \;.
+\end{align}
+
+
+\section{Example}
+
+it were interesting to see how the misfit successively evolves \dots
+\begin{figure}
+    \centering
+    \input{fig_example.pgf}
+    \caption{Just considering halve the stations due to heavy memory consumption }
+    \label{fig:example}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \input{fig_example_var.pgf}
+    \caption{posterior standard deviation; artifacts are due to single precision }
+    \label{fig:example_var}
+\end{figure}
 
 \end{document}
 
