@@ -124,3 +124,29 @@ def gauss_kernel(crd1, crd2, ell):
     d = great_circle_distance(crd1, crd2)
     return np.exp(-(d/ell)**2).astype(dt_float)
 
+
+class station_pair(object):
+    def __init__(self, lat1, lon1, lat2, lon2):
+        self.lat1 = lat1
+        self.lon1 = lon1
+        self.lat2 = lat2
+        self.lon2 = lon2
+        self.indices = [1,2,3,]
+        self.spacing = 0.16
+
+
+    def T(self, c):
+        ''' Pass a velocity model and return the according travel time '''
+        return simps(r_E/c[self.indices], dx=self.spacing)
+
+    def var_DD(self, mean, cov):
+        ''' Calculate variance '''
+        cor = 123.
+        return -simps(r_E*cor/mean[self.indices]**2, dx=self.spacing)
+
+    def cor_CT(self, mean, cov):
+        ''' Pass a model's mean and covariance and return correlations amongst
+            model and travel time '''
+        return -simps(r_E*cov[:,self.indices]/mean[self.indices]**2, \
+                      dx=self.spacing, axis=-1)
+
