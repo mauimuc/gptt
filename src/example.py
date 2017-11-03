@@ -24,6 +24,7 @@ def c_act(crd):
 if __name__ == '__main__':
     from file_IO import read_station_file
     from gptt import cos_central_angle, gauss_kernel, great_circle_path, line_element, dt_xyz, to_xyz, r_E
+    from gptt import StationPair
     from scipy.integrate import simps
 
 
@@ -38,23 +39,47 @@ if __name__ == '__main__':
     min_samples = 2
     ds = central_angle.min()/min_samples # Spacing in [rad]
     # Number of samples per path
+    npts = np.round(central_angle/ds, 0).astype(int) - 2
+
+    pairs = list()
+    points = np.empty(npts.sum() + 20, dtype=dt_xyz)
+    index = stations.size
+    points[0:index] = stations
+    for i, j, n, ca in np.nditer( (idx, idy, npts, central_angle) ):
+        indices = np.array( [i, ] + range(index, index+n) + [j, ] )
+        points[indices]['x'] = 1
+        pair_ij = StationPair(indices=indices, \
+                              lat1=stations[i]['lat'], lon1=stations[i]['lon'], \
+                              lat2=stations[j]['lat'], lon2=stations[j]['lon'])
+        pairs.append(pair_ij)
+        # Increment index
+        index += n
+
+    # Number of samples per path
     npts = np.round(central_angle/ds, 0).astype(int)
     # Indices for array slicing
     index = npts.cumsum() - npts
-
     # Allocate array for sampling points
     # FIXME There is quite a bunch of duplicates
     points = np.empty(npts.sum(), dtype=dt_xyz)
     # Allocate memory for path parametrization
     ts = np.empty_like(points, dtype=dt_float)
 
+    #for i, j in np.nditer( (idx, idy, ca) ):
+    #    t, dt = np.linspace(0, ca, n, retstep=True)
+    #    points = great_circle_path(st1, st2, t)
+    #    indices = (i, in-between, j)
+
     # Calculate sampling points and parametrization
     it = np.nditer( (stations[idx], stations[idy], central_angle, npts, index) )
+    pairs = list()
     for st1, st2, ca, n, i in it:
         slc = slice(i,i+n,1)
-        t = np.linspace(0, ca, n)
+        t, dt = np.linspace(0, ca, n, retstep=True)
         ts[slc] = t
         points[slc] = great_circle_path(st1, st2, t)
+        pair = StationPair(1,1,1,1,spacing=dt, indices=range(i,i+n) )
+        pairs.append(pair)
 
     # Actual velocity model
     c = c_act(points)
@@ -112,14 +137,18 @@ if __name__ == '__main__':
     #m = np.empty(191)
     #m[0] = misfit()
     for st1, st2, D12, i, n in it:
+        pair = pairs[a]
         a+=1
-        slc = slice(i,i+n,1) # Slice
-        t12 = ts[slc] # Discretization
-        mu_T12 = simps(r_E/mu_C[slc], t12) # Prior travel time
+        #slc = slice(i,i+n,1) # Slice
+        #t12 = ts[slc] # Discretization
+        #mu_T12 = simps(r_E/mu_C[slc], t12) # Prior travel time
+        mu_T12 = pair.T(mu_C)#= simps(r_E/mu_C[slc], t12) # Prior travel time
         # Correlations amongst model and travel times
-        cor_CT = -simps(cov_CC[:,slc]*r_E/mu_C[slc]**2, t12, axis=-1).astype(dt_float)
+        #cor_CT = -simps(cov_CC[:,slc]*r_E/mu_C[slc]**2, t12, axis=-1).astype(dt_float)
+        cor_CT = pair.cor_CT(mean=mu_C, cov=cov_CC)
         # Prior variance
-        var_TT = -simps(cor_CT[slc]*r_E/mu_C[slc]**2, t12, axis=-1)
+        #var_TT = -simps(cor_CT[slc]*r_E/mu_C[slc]**2, t12, axis=-1)
+        var_TT = pair.var_DD(mean=mu_C, cov=cov_CC)
         var_DD = var_TT + epsilon**2 # Noise level
 
         # Update posterior mean

@@ -127,24 +127,48 @@ def gauss_kernel(crd1, crd2, ell):
     return np.exp(-(d/ell)**2).astype(dt_float)
 
 
-class station_pair(object):
-    def __init__(self, lat1, lon1, lat2, lon2):
+from scipy.integrate import simps
+
+class StationPair(object):
+    def __init__(self, lat1, lon1, lat2, lon2, indices, spacing=None):
         self.lat1 = lat1
         self.lon1 = lon1
         self.lat2 = lat2
         self.lon2 = lon2
-        self.indices = [1,2,3,]
-        self.spacing = 0.16
+        self.d = None # Observed value
+        self.sd = None # Standard deviation
+        self.indices = indices # Discretization
+        self.spacing = spacing # Even spacing
 
+    @property
+    def npts(self):
+        return self.indices.size
+
+    @property
+    def cos_central_angle(self):
+        phi1 = np.deg2rad(self.lat1) # latitude in rad
+        phi2 = np.deg2rad(self.lat2) # latitude in rad
+        cos_Delta_lam = np.cos(np.abs(np.deg2rad(self.lon1 - self.lon2)))
+        return np.sin(phi1)*np.sin(phi2) + np.cos(phi1)*np.cos(phi2)*cos_Delta_lam
+
+    @property
+    def spacing2(self):
+        return self.central_angle/(self.npts - 1)
+
+    @property
+    def central_angle(self):
+        return np.arccos(self.cos_central_angle)
 
     def T(self, c):
         ''' Pass a velocity model and return the according travel time '''
         return simps(r_E/c[self.indices], dx=self.spacing)
 
     def var_DD(self, mean, cov):
-        ''' Calculate variance '''
-        cor = 123.
-        return -simps(r_E*cor/mean[self.indices]**2, dx=self.spacing)
+        ''' Calculate the variance by passing the model's mean and covariance '''
+        indices = np.reshape(self.indices, (-1,1)) # Well, indexing is cryptic
+        cor = simps(r_E*cov[indices.T, indices]/mean[self.indices]**2, \
+                    dx=self.spacing, axis=-1)
+        return simps(r_E*cor/mean[self.indices]**2, dx=self.spacing)
 
     def cor_CT(self, mean, cov):
         ''' Pass a model's mean and covariance and return correlations amongst
