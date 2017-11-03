@@ -21,6 +21,9 @@ def c_act(crd):
     c -= 40*np.exp(-gcd_x2/65000)
     return c
 
+def mu_C_pri(crd):
+    return np.full_like(crd, 4000, dtype=dt_float)
+
 def misfit():
     # XXX Does no longer work
     # TODO Adopt to OO approach
@@ -43,14 +46,13 @@ def misfit():
 
 
 if __name__ == '__main__':
-    from file_IO import read_station_file
-    from gptt import cos_central_angle, gauss_kernel, great_circle_path, line_element, dt_xyz, to_xyz, r_E
-    from gptt import StationPair
+    from file_IO import read_station_file2
+    from gptt import cos_central_angle, gauss_kernel, r_E, StationPair, to_latlon
     from scipy.integrate import simps
 
 
-    # Read coordinates of the NORSAR Array
-    stations = read_station_file('../dat/stations.dat')
+    # Read station coordinates
+    stations = read_station_file2('../dat/stations.dat')[:16]
 
     # Indices for all combinations of stations with duplicates dropped
     idx, idy = np.tril_indices(stations.size, -1)
@@ -62,60 +64,60 @@ if __name__ == '__main__':
     # Number of samples per path; to suppress duplicates subtract two
     npts = np.round(central_angle/ds, 0).astype(int) - 2
 
-    # Standard deviation measurement noise
+    # Measurement noise; standard deviation
     epsilon = 0.01
 
-    # Sampling points
-    points = np.empty(npts.sum() + 20, dtype=dt_xyz)
-    index = stations.size # An index keeping track where we are at the points array
-    points[0:index] = stations
-    # TODO Add design points; the plots corners
-    pairs = list()
+    # Allocate memory for sampling points
+    points = np.empty(npts.sum() + stations.size, dtype=dt_latlon)
+    # An index keeping track where we are at the array of sampling points
+    index = stations.size # The first entries are reserved for station coordinates
+    # TODO Add design points; e.g. corners of the plot
+    pairs = list() # Empty list to store station pairs
     for i, j, n in np.nditer( (idx, idy, npts) ):
         indices = np.array( [i, ] + range(index, index+n) + [j, ] )
         st_i = stations[i]
         st_j = stations[j]
-        pair_ij = StationPair(indices=indices, \
-                              lat1=st_i['lat'], lon1=st_i['lon'], \
-                              lat2=st_j['lat'], lon2=st_j['lon'])
-        t = np.linspace(0, pair_ij.central_angle, pair_ij.npts)
-        path = great_circle_path(st_i, st_j, t)
+        pair_ij = StationPair(indices=indices, error=epsilon, \
+                              st1=stations[i], st2=stations[j])
+
+        # Fill array of sampling points
+        path = pair_ij.great_circle_path
         points[indices] = path
+
+        # Pseudo observations
         pair_ij.T_act = simps(r_E/c_act(path), dx=pair_ij.spacing)
         pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
+
+        # Append to list of station pairs
         pairs.append(pair_ij)
         # Increment index
         index += n
 
 
     # A priori assumptions
-    mu_C_pri = 4000
-    ell = 11000
-    tau = 40
-    mu_C = np.full_like(points, mu_C_pri, dtype=dt_float)
-    cov_CC = tau**2*gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], ell)
+    ell = 11000 # Characteristic length
+    tau = 40  # A priori uncertainty; standard deviation
+    mu_C = mu_C_pri(points) # The velocity models a priori mean
+    # A priori covariance
+    cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell)
 
     # Successively consider evidence
-    a = 0
     for pair in pairs:
-        a+=1
-        # A prior travel time
-        mu_T12 = pair.T(mu_C)
+        # Prior mean
+        mu_T = pair.T(mu_C)
         # Correlations amongst model and travel time
         cor_CT = pair.cor_CT(mean=mu_C, cov=cov_CC)
         # Prior variance
-        var_TT = pair.var_DD(mean=mu_C, cov=cov_CC)
-        var_DD = var_TT + epsilon**2 # Noise level
-
+        var_DD = pair.var_DD(mean=mu_C, cov=cov_CC)
         # Update posterior mean
-        mu_C += cor_CT/var_DD*(pair.d - mu_T12)
+        mu_C += cor_CT/var_DD*(pair.d - mu_T)
         # Update posterior co-variance
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
-        print 'Combination %i ' % a # TODO plot station name
+        # Screen output
+        print 'Combination %s -- %s ' % ( pair.st1['stnm'], pair.st2['stnm'] )
 
 
-
-
+    # Write parameters for being used in the LaTeX document
     with open('../def_example.tex', 'w') as fh:
         fh.write(r'\def\SFWnobs{%i}' % stations.size + '\n')
         fh.write(r'\def\SFWminsamples{%i}' % min_samples + '\n')
@@ -123,16 +125,15 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWtau{%i}' % tau + '\n')
         fh.write(r'\def\SFWell{%i}' % ell + '\n')
         fh.write(r'\def\SFWepsilon{%.2f}' % epsilon + '\n')
-        fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri  + '\n')
+        fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri(1)  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
-        fh.write(r'\def\SFWngrid{%i}' % 0 + '\n')
 
 
-    from plotting import plt, m, lllat, lllon, urlat, urlon
+    from plotting import plt, prepare_map
     from gptt import to_latlon
 
-    points = to_latlon(points)
 
+    m = prepare_map()
     x, y = m(points['lon'], points['lat'])
     pcol = plt.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
     cbar = m.colorbar(pcol, location='right', pad="5%")
@@ -141,14 +142,15 @@ if __name__ == '__main__':
     cbar.set_label(r'$\frac ms$', rotation='horizontal')
     cbar.solids.set_edgecolor("face")
     m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', s=2)
-    plt.savefig('../fig_example.pgf', bbox_inches='tight')
+    plt.savefig('../fig_example_mu.pgf', bbox_inches='tight')
+    plt.close()
 
-    pcol.remove()
+    m = prepare_map()
     var_C = np.sqrt(cov_CC.diagonal())
     pcol = plt.tripcolor(x, y, var_C, cmap='Reds', rasterized=True)
     cbar = m.colorbar(location='right', pad="5%")
     cbar.solids.set_edgecolor("face")
     m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', s=2)
-    plt.savefig('../fig_example_var.pgf', bbox_inches='tight')
+    plt.savefig('../fig_example_sd.pgf', bbox_inches='tight')
 
 

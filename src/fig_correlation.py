@@ -9,7 +9,9 @@ __license__   = "GPLv3"
 
 from gptt import dt_latlon, cos_central_angle, great_circle_path, to_latlon, gauss_kernel
 from scipy.integrate import simps
-from plotting import np, plt, m, lllat, lllon, urlat, urlon, stations
+from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon, stations
+
+m = prepare_map()
 
 # Stations
 st1 = stations[0]
@@ -31,7 +33,7 @@ N = 150j
 grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
 # Correlations amongst great circle segment and grid
 ell = 15000
-K = gauss_kernel(pt12.reshape((-1,1,1)), grid, ell)
+K = gauss_kernel(pt12.reshape((-1,1,1)), grid, tau=1, ell=ell)
 # Integrate travel time
 cor_TC = simps(K, t12, axis=0)
 # Plot correlation kernel; pcolor needs points in between

@@ -8,11 +8,12 @@ __license__   = "GPLv3"
 ''' Module to store routines for Bayesian surface wave tomography '''
 
 import numpy as np
+from scipy.integrate import simps
 
 r_E = 6371000.
 
 # Structured arrays to hold coordinates
-dt_float = np.float32
+dt_float = np.float64
 dt_latlon = np.dtype( [('lat', dt_float), ('lon', dt_float)] )
 dt_xyz = np.dtype( [('x', dt_float), ('y', dt_float), ('z', dt_float)] )
 dt_rtp = np.dtype( [('r', dt_float), ('t', dt_float), ('p', dt_float)] )
@@ -73,27 +74,24 @@ def to_xyz(crd, r=r_E):
         raise NotImplementedError
     return res
 
-def _inner(crd1, crd2):
-    a = to_xyz(crd1)
-    b = to_xyz(crd2)
-    return a['x']*b['x'] + a['y']*b['y'] + a['z']*b['z']
-
 
 def great_circle_distance(crd1, crd2):
-    r1 = to_rtp(crd1)['r']
-    r2 = to_rtp(crd2)['r']
-    cos_sigma = cos_central_angle(crd1, crd2)
+    cos_sigma = cos_central_angle(to_latlon(crd1), to_latlon(crd2))
     # XXX Due to rounding errors cos_sigma > 1 -> NaN
     cos_sigma = np.where(cos_sigma>1., 1., cos_sigma)
-    return np.arccos(cos_sigma)*np.sqrt(r1*r2)
+    return np.arccos(cos_sigma)*r_E
+
 
 def cos_central_angle(crd1, crd2):
-    r1 = to_rtp(crd1)['r']
-    r2 = to_rtp(crd2)['r']
-    return _inner(crd1, crd2)/r1/r2
+    ''' Coordinates as numpy structured type in degrees '''
+    phi1 = np.deg2rad(crd1['lat']) # latitude in rad
+    phi2 = np.deg2rad(crd2['lat']) # latitude in rad
+    cos_Delta_lam = np.cos(np.deg2rad(crd1['lon'] - crd2['lon']))
+    return np.sin(phi1)*np.sin(phi2) + np.cos(phi1)*np.cos(phi2)*cos_Delta_lam
+
 
 def great_circle_path(u, v, t):
-    cos_sigma = cos_central_angle(u, v)
+    cos_sigma = cos_central_angle(to_latlon(u), to_latlon(v))
     sin_sigma = np.sqrt(1 - cos_sigma**2)
     u = to_xyz(u)
     v = to_xyz(v)
@@ -107,36 +105,19 @@ def great_circle_path(u, v, t):
     tz = uz*np.cos(t) + wz*np.sin(t)
     return np.rec.fromarrays( (tx, ty, tz), dtype=dt_xyz)
 
-def line_element(u, v, t):
-    cos_sigma = cos_central_angle(u, v)
-    sin_sigma = np.sqrt(1 - cos_sigma**2)
-    u = to_xyz(u)
-    v = to_xyz(v)
-    ux, uy, uz = u['x'], u['y'], u['z']
-    vx, vy, vz = v['x'], v['y'], v['z']
-    wx = (vx - ux*cos_sigma)/sin_sigma
-    wy = (vy - uy*cos_sigma)/sin_sigma
-    wz = (vz - uz*cos_sigma)/sin_sigma
-    tx = wx*np.cos(t) - ux*np.sin(t)
-    ty = wy*np.cos(t) - uy*np.sin(t)
-    tz = wz*np.cos(t) - uz*np.sin(t)
-    return np.sqrt(tx**2 + ty**2 + tz**2)
 
-def gauss_kernel(crd1, crd2, ell):
+def gauss_kernel(crd1, crd2, tau, ell):
     d = great_circle_distance(crd1, crd2)
-    return np.exp(-(d/ell)**2).astype(dt_float)
+    return tau**2*np.exp(-(d/ell)**2).astype(dt_float)
 
 
-from scipy.integrate import simps
 
 class StationPair(object):
-    def __init__(self, lat1, lon1, lat2, lon2, indices):
-        self.lat1 = lat1
-        self.lon1 = lon1
-        self.lat2 = lat2
-        self.lon2 = lon2
+    def __init__(self, st1, st2, indices, error):
+        self.st1 = st1
+        self.st2 = st2
         self.d = None # Observed value
-        self.sd = None # Standard deviation
+        self.error = error # Standard deviation
         self.indices = indices # Discretization
 
     @property
@@ -145,10 +126,7 @@ class StationPair(object):
 
     @property
     def cos_central_angle(self):
-        phi1 = np.deg2rad(self.lat1) # latitude in rad
-        phi2 = np.deg2rad(self.lat2) # latitude in rad
-        cos_Delta_lam = np.cos(np.abs(np.deg2rad(self.lon1 - self.lon2)))
-        return np.sin(phi1)*np.sin(phi2) + np.cos(phi1)*np.cos(phi2)*cos_Delta_lam
+        return cos_central_angle(self.st1, self.st2)
 
     @property
     def spacing(self):
@@ -157,6 +135,14 @@ class StationPair(object):
     @property
     def central_angle(self):
         return np.arccos(self.cos_central_angle)
+
+
+    @property
+    def great_circle_path(self):
+        st1 = np.array( (self.st1['lat'], self.st1['lon']), dtype=dt_latlon)
+        st2 = np.array( (self.st2['lat'], self.st2['lon']), dtype=dt_latlon)
+        t = np.linspace(0, self.central_angle, self.npts)
+        return to_latlon(great_circle_path(st1, st2, t))
 
     def T(self, c):
         ''' Pass a velocity model and return the according travel time '''
@@ -167,7 +153,7 @@ class StationPair(object):
         indices = np.reshape(self.indices, (-1,1)) # Well, indexing is cryptic
         cor = simps(r_E*cov[indices.T, indices]/mean[self.indices]**2, \
                     dx=self.spacing, axis=-1)
-        return simps(r_E*cor/mean[self.indices]**2, dx=self.spacing)
+        return simps(r_E*cor/mean[self.indices]**2, dx=self.spacing) + self.error**2
 
     def cor_CT(self, mean, cov):
         ''' Pass a model's mean and covariance and return correlations amongst

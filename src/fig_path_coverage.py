@@ -10,8 +10,9 @@ __license__   = "GPLv3"
 from file_IO import read_station_file
 from example import c_act
 from gptt import dt_latlon
-from plotting import np, plt, m, lllat, lllon, urlat, urlon, stations
+from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon, stations
 
+m = prepare_map()
 
 # Combinations of all stations dropping duplicates
 idx, idy = np.tril_indices(stations.size, -1)
