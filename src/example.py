@@ -21,6 +21,27 @@ def c_act(crd):
     c -= 40*np.exp(-gcd_x2/65000)
     return c
 
+def misfit():
+    # XXX Does no longer work
+    # TODO Adopt to OO approach
+    cov_DD = np.zeros( (190,190) )
+    mu_D = np.zeros( 190 )
+    for i in range(index.size):
+        slc_i = slice(index[i], index[i] + npts[i], 1) # Slice
+        t_i = ts[slc_i] # Discretization
+        mu_D[i] = simps(r_E/mu_C[slc_i], t_i) # travel time
+        cor = -simps(cov_CC[:-N**2,slc_i]*r_E/mu_C[slc_i]**2, t_i, axis=-1)
+        for j in range(i, index.size):
+            slc_j = slice(index[j], index[j] + npts[j], 1) # Slice
+            t_j = ts[slc_j] # Discretization
+            cov = -simps(cor[slc_j]*r_E/mu_C[slc_j]**2, t_j, axis=-1)
+            cov_DD[i,j] = cov
+            if i!=j:
+                cov_DD[j,i] = cov
+    L = np.linalg.cholesky(cov_DD)
+    return (np.linalg.solve(L, D - mu_D)**2).sum()
+
+
 if __name__ == '__main__':
     from file_IO import read_station_file
     from gptt import cos_central_angle, gauss_kernel, great_circle_path, line_element, dt_xyz, to_xyz, r_E
@@ -38,125 +59,59 @@ if __name__ == '__main__':
     central_angle = np.arccos(cos_central_angle(stations[idx], stations[idy]))
     min_samples = 2
     ds = central_angle.min()/min_samples # Spacing in [rad]
-    # Number of samples per path
+    # Number of samples per path; to suppress duplicates subtract two
     npts = np.round(central_angle/ds, 0).astype(int) - 2
 
-    pairs = list()
+    # Standard deviation measurement noise
+    epsilon = 0.01
+
+    # Sampling points
     points = np.empty(npts.sum() + 20, dtype=dt_xyz)
-    index = stations.size
+    index = stations.size # An index keeping track where we are at the points array
     points[0:index] = stations
-    for i, j, n, ca in np.nditer( (idx, idy, npts, central_angle) ):
+    # TODO Add design points; the plots corners
+    pairs = list()
+    for i, j, n in np.nditer( (idx, idy, npts) ):
         indices = np.array( [i, ] + range(index, index+n) + [j, ] )
-        points[indices]['x'] = 1
+        st_i = stations[i]
+        st_j = stations[j]
         pair_ij = StationPair(indices=indices, \
-                              lat1=stations[i]['lat'], lon1=stations[i]['lon'], \
-                              lat2=stations[j]['lat'], lon2=stations[j]['lon'])
+                              lat1=st_i['lat'], lon1=st_i['lon'], \
+                              lat2=st_j['lat'], lon2=st_j['lon'])
+        t = np.linspace(0, pair_ij.central_angle, pair_ij.npts)
+        path = great_circle_path(st_i, st_j, t)
+        points[indices] = path
+        pair_ij.T_act = simps(r_E/c_act(path), dx=pair_ij.spacing)
+        pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
         pairs.append(pair_ij)
         # Increment index
         index += n
 
-    # Number of samples per path
-    npts = np.round(central_angle/ds, 0).astype(int)
-    # Indices for array slicing
-    index = npts.cumsum() - npts
-    # Allocate array for sampling points
-    # FIXME There is quite a bunch of duplicates
-    points = np.empty(npts.sum(), dtype=dt_xyz)
-    # Allocate memory for path parametrization
-    ts = np.empty_like(points, dtype=dt_float)
 
-    #for i, j in np.nditer( (idx, idy, ca) ):
-    #    t, dt = np.linspace(0, ca, n, retstep=True)
-    #    points = great_circle_path(st1, st2, t)
-    #    indices = (i, in-between, j)
-
-    # Calculate sampling points and parametrization
-    it = np.nditer( (stations[idx], stations[idy], central_angle, npts, index) )
-    pairs = list()
-    for st1, st2, ca, n, i in it:
-        slc = slice(i,i+n,1)
-        t, dt = np.linspace(0, ca, n, retstep=True)
-        ts[slc] = t
-        points[slc] = great_circle_path(st1, st2, t)
-        pair = StationPair(1,1,1,1,spacing=dt, indices=range(i,i+n) )
-        pairs.append(pair)
-
-    # Actual velocity model
-    c = c_act(points)
     # A priori assumptions
-    # TODO add a grid of design points
-    N = 35
-    lat, lon = np.mgrid[64.5:69.5:N*1j, 11.5:23:N*1j]
-    design_points = np.rec.fromarrays( (lat, lon), dtype=dt_latlon)
-    points = np.concatenate( (points, to_xyz(design_points).flatten()) )
     mu_C_pri = 4000
-    mu_C = np.full_like(points, mu_C_pri, dtype=dt_float)
-
     ell = 11000
     tau = 40
+    mu_C = np.full_like(points, mu_C_pri, dtype=dt_float)
     cov_CC = tau**2*gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], ell)
 
-    # Calculate actual and prior travel times
-    it = np.nditer( (stations[idx], stations[idy], index, npts, None, None), \
-                    op_dtypes=(None, None, None, None, dt_float, dt_float) )
-    for st1, st2, i, n, T12, mu_T12_pri in it:
-        slc = slice(i,i+n,1) # Slice
-        c12 = c[slc] # Velocity along the path
-        mu_C12 = mu_C[slc] # Prior velocity
-        t12 = ts[slc] # Discretization
-        T12[...] = simps(r_E/c12, t12) # Actual travel time
-        mu_T12_pri[...] = simps(r_E/mu_C12, t12) # Prior travel time
-
-    epsilon = 0.01
-
-    T_act, mu_T_pri  = it.operands[-2:]
-    # Pseudo travel time observations
-    D = T_act + np.random.normal(loc=0, scale=epsilon, size=T_act.size).astype(dt_float)
-
-    def misfit():
-        cov_DD = np.zeros( (190,190) )
-        mu_D = np.zeros( 190 )
-        for i in range(index.size):
-            slc_i = slice(index[i], index[i] + npts[i], 1) # Slice
-            t_i = ts[slc_i] # Discretization
-            mu_D[i] = simps(r_E/mu_C[slc_i], t_i) # travel time
-            cor = -simps(cov_CC[:-N**2,slc_i]*r_E/mu_C[slc_i]**2, t_i, axis=-1)
-            for j in range(i, index.size):
-                slc_j = slice(index[j], index[j] + npts[j], 1) # Slice
-                t_j = ts[slc_j] # Discretization
-                cov = -simps(cor[slc_j]*r_E/mu_C[slc_j]**2, t_j, axis=-1)
-                cov_DD[i,j] = cov
-                if i!=j:
-                    cov_DD[j,i] = cov
-        L = np.linalg.cholesky(cov_DD)
-        return (np.linalg.solve(L, D - mu_D)**2).sum()
-
-
-    it = np.nditer((stations[idx], stations[idy], D, index, npts))
+    # Successively consider evidence
     a = 0
-    #m = np.empty(191)
-    #m[0] = misfit()
-    for st1, st2, D12, i, n in it:
-        pair = pairs[a]
+    for pair in pairs:
         a+=1
-        #slc = slice(i,i+n,1) # Slice
-        #t12 = ts[slc] # Discretization
-        #mu_T12 = simps(r_E/mu_C[slc], t12) # Prior travel time
-        mu_T12 = pair.T(mu_C)#= simps(r_E/mu_C[slc], t12) # Prior travel time
-        # Correlations amongst model and travel times
-        #cor_CT = -simps(cov_CC[:,slc]*r_E/mu_C[slc]**2, t12, axis=-1).astype(dt_float)
+        # A prior travel time
+        mu_T12 = pair.T(mu_C)
+        # Correlations amongst model and travel time
         cor_CT = pair.cor_CT(mean=mu_C, cov=cov_CC)
         # Prior variance
-        #var_TT = -simps(cor_CT[slc]*r_E/mu_C[slc]**2, t12, axis=-1)
         var_TT = pair.var_DD(mean=mu_C, cov=cov_CC)
         var_DD = var_TT + epsilon**2 # Noise level
 
         # Update posterior mean
-        mu_C += cor_CT/var_DD*(D12 - mu_T12)
+        mu_C += cor_CT/var_DD*(pair.d - mu_T12)
         # Update posterior co-variance
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
-        #m[a] = misfit()
-        print 'Combination %i ' % a
+        print 'Combination %i ' % a # TODO plot station name
 
 
 
@@ -170,29 +125,30 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWepsilon{%.2f}' % epsilon + '\n')
         fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
-        fh.write(r'\def\SFWngrid{%i}' % N + '\n')
+        fh.write(r'\def\SFWngrid{%i}' % 0 + '\n')
 
 
     from plotting import plt, m, lllat, lllon, urlat, urlon
+    from gptt import to_latlon
 
-    lat, lon = np.mgrid[lat.min():lat.max():(N+1)*1j, lon.min():lon.max():(N+1)*1j]
-    C = mu_C[-N**2:].reshape( (N,N) )
-    pcol = m.pcolormesh(lon, lat, C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True, latlon=True)
-    cbar = m.colorbar(location='right', pad="5%")
+    points = to_latlon(points)
+
+    x, y = m(points['lon'], points['lat'])
+    pcol = plt.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
+    cbar = m.colorbar(pcol, location='right', pad="5%")
     ticks = np.linspace(3950, 4050, 5)
     cbar.set_ticks(ticks)
     cbar.set_label(r'$\frac ms$', rotation='horizontal')
     cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True)
-    plt.savefig('../fig_example.pgf', transparent=True, bbox_inches='tight', pad_inches=0.01)
+    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', s=2)
+    plt.savefig('../fig_example.pgf', bbox_inches='tight')
 
     pcol.remove()
-
-    var_C = np.sqrt(cov_CC.diagonal()[-N**2:].reshape( (N,N) ))
-    pcol = m.pcolormesh(lon, lat, var_C, rasterized=True, latlon=True, vmin=25, vmax=40, cmap='Reds')
+    var_C = np.sqrt(cov_CC.diagonal())
+    pcol = plt.tripcolor(x, y, var_C, cmap='Reds', rasterized=True)
     cbar = m.colorbar(location='right', pad="5%")
     cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True)
-    plt.savefig('../fig_example_var.pgf', transparent=True, bbox_inches='tight', pad_inches=0.01)
+    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', s=2)
+    plt.savefig('../fig_example_var.pgf', bbox_inches='tight')
 
 

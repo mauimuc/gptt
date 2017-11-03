@@ -130,7 +130,7 @@ def gauss_kernel(crd1, crd2, ell):
 from scipy.integrate import simps
 
 class StationPair(object):
-    def __init__(self, lat1, lon1, lat2, lon2, indices, spacing=None):
+    def __init__(self, lat1, lon1, lat2, lon2, indices):
         self.lat1 = lat1
         self.lon1 = lon1
         self.lat2 = lat2
@@ -138,7 +138,6 @@ class StationPair(object):
         self.d = None # Observed value
         self.sd = None # Standard deviation
         self.indices = indices # Discretization
-        self.spacing = spacing # Even spacing
 
     @property
     def npts(self):
@@ -152,7 +151,7 @@ class StationPair(object):
         return np.sin(phi1)*np.sin(phi2) + np.cos(phi1)*np.cos(phi2)*cos_Delta_lam
 
     @property
-    def spacing2(self):
+    def spacing(self):
         return self.central_angle/(self.npts - 1)
 
     @property

@@ -13,6 +13,8 @@ from file_IO import read_station_file
 #Options
 params = {'text.usetex' : True,
           'font.size' : 9,
+          'savefig.dpi': 300,
+          'savefig.pad_inches': 0.0,
           'pgf.texsystem' : 'pdflatex',
           'pgf.rcfonts': False, }
 plt.rcParams.update(params)
