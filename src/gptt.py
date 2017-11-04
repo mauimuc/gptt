@@ -13,70 +13,12 @@ from scipy.integrate import simps
 r_E = 6371000.
 
 # Structured arrays to hold coordinates
-dt_float = np.float64
-dt_latlon = np.dtype( [('lat', dt_float), ('lon', dt_float)] )
-dt_xyz = np.dtype( [('x', dt_float), ('y', dt_float), ('z', dt_float)] )
-dt_rtp = np.dtype( [('r', dt_float), ('t', dt_float), ('p', dt_float)] )
-
-
-def to_latlon(crd):
-    ''' Transform intro latitude and longitude (degrees) '''
-    dtype = np.result_type(crd)
-    res = np.empty_like(crd, dtype=dt_latlon)
-    if dtype == dt_latlon:
-        res = crd
-    elif dtype == dt_rtp:
-        res['lat'] = 90. - np.rad2deg(crd['t'])
-        res['lon'] = np.rad2deg(crd['p'])
-    elif dtype == dt_xyz:
-        r = np.sqrt(crd['x']**2 + crd['y']**2 + crd['z']**2)
-        res['lon'] = np.rad2deg(np.arctan2(crd['y'], crd['x']))
-        res['lat'] = 90. - np.rad2deg(np.arccos(crd['z']/r))
-    else:
-        raise NotImplementedError
-    return res
-
-def to_rtp(crd, r=r_E):
-    dtype = np.result_type(crd)
-    res = np.empty_like(crd, dtype=dt_rtp)
-    if dtype == dt_latlon:
-        res['r'] = r
-        res['t'] = np.deg2rad(90 - crd['lat'])
-        res['p'] = np.deg2rad(crd['lon'])
-    elif dtype == dt_rtp:
-        res = crd
-    elif dtype == dt_xyz:
-        res['r'] = np.sqrt(crd['x']**2 + crd['y']**2 + crd['z']**2)
-        res['p'] = np.arctan2(crd['y'], crd['x'])
-        res['t'] = np.arccos(crd['z']/res['r'])
-    else:
-        raise NotImplementedError
-    return res
-
-def to_xyz(crd, r=r_E):
-    ''' Transform intro Cartesian coordinates '''
-    dtype = np.result_type(crd)
-    res = np.empty_like(crd, dtype=dt_xyz)
-    if dtype == dt_latlon:
-        t = np.deg2rad(90 - crd['lat'])
-        p = np.deg2rad(crd['lon'])
-        res['x'] = r*np.sin(t)*np.cos(p)
-        res['y'] = r*np.sin(t)*np.sin(p)
-        res['z'] = r*np.cos(t)
-        return res
-    elif dtype == dt_rtp:
-        res['x'] = crd['r']*np.sin(crd['t'])*np.cos(crd['p'])
-        res['y'] = crd['r']*np.sin(crd['t'])*np.sin(crd['p'])
-        res['z'] = crd['r']*np.cos(crd['t'])
-    elif dtype == dt_xyz:
-        res = crd
-    else:
-        raise NotImplementedError
-    return res
+dt_latlon = np.dtype( [('lat', np.float), ('lon', np.float)] )
 
 
 def great_circle_distance(crd1, crd2):
-    cos_sigma = cos_central_angle(to_latlon(crd1), to_latlon(crd2))
+    ''' pass coordinates crd1 und crd1 as a structured array '''
+    cos_sigma = cos_central_angle(crd1, crd2)
     # XXX Due to rounding errors cos_sigma > 1 -> NaN
     cos_sigma = np.where(cos_sigma>1., 1., cos_sigma)
     return np.arccos(cos_sigma)*r_E
@@ -90,26 +32,9 @@ def cos_central_angle(crd1, crd2):
     return np.sin(phi1)*np.sin(phi2) + np.cos(phi1)*np.cos(phi2)*cos_Delta_lam
 
 
-def great_circle_path(u, v, t):
-    cos_sigma = cos_central_angle(to_latlon(u), to_latlon(v))
-    sin_sigma = np.sqrt(1 - cos_sigma**2)
-    u = to_xyz(u)
-    v = to_xyz(v)
-    ux, uy, uz = u['x'], u['y'], u['z']
-    vx, vy, vz = v['x'], v['y'], v['z']
-    wx = (vx - ux*cos_sigma)/sin_sigma
-    wy = (vy - uy*cos_sigma)/sin_sigma
-    wz = (vz - uz*cos_sigma)/sin_sigma
-    tx = ux*np.cos(t) + wx*np.sin(t)
-    ty = uy*np.cos(t) + wy*np.sin(t)
-    tz = uz*np.cos(t) + wz*np.sin(t)
-    return np.rec.fromarrays( (tx, ty, tz), dtype=dt_xyz)
-
-
 def gauss_kernel(crd1, crd2, tau, ell):
     d = great_circle_distance(crd1, crd2)
-    return tau**2*np.exp(-(d/ell)**2).astype(dt_float)
-
+    return tau**2*np.exp(-(d/ell)**2)
 
 
 class StationPair(object):
@@ -122,7 +47,7 @@ class StationPair(object):
 
     @property
     def npts(self):
-        return self.indices.size
+        return len(self.indices)
 
     @property
     def cos_central_angle(self):
@@ -136,13 +61,36 @@ class StationPair(object):
     def central_angle(self):
         return np.arccos(self.cos_central_angle)
 
+    @property
+    def _xyz1(self):
+        t = np.deg2rad(90 - self.st1['lat'])
+        p = np.deg2rad(self.st1['lon'])
+        return np.sin(t)*np.cos(p), np.sin(t)*np.sin(p), np.cos(t)
+    @property
+    def _xyz2(self):
+        t = np.deg2rad(90 - self.st2['lat'])
+        p = np.deg2rad(self.st2['lon'])
+        return np.sin(t)*np.cos(p), np.sin(t)*np.sin(p), np.cos(t)
+
+    @property
+    def sin_central_angle(self):
+        return np.sqrt(1 - self.cos_central_angle**2)
 
     @property
     def great_circle_path(self):
-        st1 = np.array( (self.st1['lat'], self.st1['lon']), dtype=dt_latlon)
-        st2 = np.array( (self.st2['lat'], self.st2['lon']), dtype=dt_latlon)
+        x1, y1, z1 = self._xyz1
+        x2, y2, z2 = self._xyz2
+        wx = (x2 - x1*self.cos_central_angle)/self.sin_central_angle
+        wy = (y2 - y1*self.cos_central_angle)/self.sin_central_angle
+        wz = (z2 - z1*self.cos_central_angle)/self.sin_central_angle
         t = np.linspace(0, self.central_angle, self.npts)
-        return to_latlon(great_circle_path(st1, st2, t))
+        tx = x1*np.cos(t) + wx*np.sin(t)
+        ty = y1*np.cos(t) + wy*np.sin(t)
+        tz = z1*np.cos(t) + wz*np.sin(t)
+        res = np.empty_like(t, dtype=dt_latlon)
+        res['lon'] = np.rad2deg(np.arctan2(ty, tx))
+        res['lat'] = 90 - np.rad2deg(np.arccos(tz))
+        return res
 
     def T(self, c):
         ''' Pass a velocity model and return the according travel time '''

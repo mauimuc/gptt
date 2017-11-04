@@ -8,11 +8,11 @@ __license__   = "GPLv3"
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
 import numpy as np
-from gptt import dt_latlon, great_circle_distance, dt_float
+from gptt import dt_latlon, great_circle_distance
 
 def c_act(crd):
     ''' Toy model for the surface wave velocity to be recovered. '''
-    c = np.full_like(crd, 4000, dtype=dt_float)
+    c = np.full_like(crd, 4000., dtype=np.float)
     x1 = np.array((66,14.5), dtype=dt_latlon)
     gcd_x1 = great_circle_distance(crd, x1)
     c += 60*np.exp(-gcd_x1/40000)
@@ -22,7 +22,7 @@ def c_act(crd):
     return c
 
 def mu_C_pri(crd):
-    return np.full_like(crd, 4000, dtype=dt_float)
+    return np.full_like(crd, 4000, dtype=np.float)
 
 def misfit():
     # XXX Does no longer work
@@ -47,12 +47,12 @@ def misfit():
 
 if __name__ == '__main__':
     from file_IO import read_station_file2
-    from gptt import cos_central_angle, gauss_kernel, r_E, StationPair, to_latlon
+    from gptt import cos_central_angle, gauss_kernel, r_E, StationPair
     from scipy.integrate import simps
 
 
     # Read station coordinates
-    stations = read_station_file2('../dat/stations.dat')[:16]
+    stations = read_station_file2('../dat/stations.dat')[:30]
 
     # Indices for all combinations of stations with duplicates dropped
     idx, idy = np.tril_indices(stations.size, -1)
@@ -81,11 +81,10 @@ if __name__ == '__main__':
                               st1=stations[i], st2=stations[j])
 
         # Fill array of sampling points
-        path = pair_ij.great_circle_path
-        points[indices] = path
+        points[indices] = pair_ij.great_circle_path
 
         # Pseudo observations
-        pair_ij.T_act = simps(r_E/c_act(path), dx=pair_ij.spacing)
+        pair_ij.T_act = simps(r_E/c_act(points[indices]), dx=pair_ij.spacing)
         pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
 
         # Append to list of station pairs
@@ -99,10 +98,10 @@ if __name__ == '__main__':
     tau = 40  # A priori uncertainty; standard deviation
     mu_C = mu_C_pri(points) # The velocity models a priori mean
     # A priori covariance
-    cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell)
+    cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
     # Successively consider evidence
-    for pair in pairs:
+    for i, pair in enumerate(pairs):
         # Prior mean
         mu_T = pair.T(mu_C)
         # Correlations amongst model and travel time
@@ -114,7 +113,7 @@ if __name__ == '__main__':
         # Update posterior co-variance
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
         # Screen output
-        print 'Combination %s -- %s ' % ( pair.st1['stnm'], pair.st2['stnm'] )
+        print 'Combination %4s -- %-4s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
 
 
     # Write parameters for being used in the LaTeX document
@@ -130,7 +129,6 @@ if __name__ == '__main__':
 
 
     from plotting import plt, prepare_map
-    from gptt import to_latlon
 
 
     m = prepare_map()
