@@ -46,13 +46,13 @@ def misfit():
 
 
 if __name__ == '__main__':
-    from file_IO import read_station_file2
+    from file_IO import read_station_file
     from gptt import cos_central_angle, gauss_kernel, r_E, StationPair
     from scipy.integrate import simps
 
 
     # Read station coordinates
-    stations = read_station_file2('../dat/stations.dat')[:30]
+    stations = read_station_file('../dat/stations.dat')[:30]
 
     # Indices for all combinations of stations with duplicates dropped
     idx, idy = np.tril_indices(stations.size, -1)

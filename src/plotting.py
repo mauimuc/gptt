@@ -22,12 +22,16 @@ plt.rcParams.update(params)
 
 # Read coordinates of the NORSA Array
 stations = read_station_file('../dat/stations.dat')
+# Lower left corner
 lllon = stations['lon'].min() - 1
 lllat = stations['lat'].min() - 0.5
+# Upper right corner
 urlon = stations['lon'].max() + 1
 urlat = stations['lat'].max() + 0.5
 
+
 def prepare_map():
+    ''' Prepare map and plot coast lines, parallels and meridians and returns the Basemap class. '''
     plt.figure(figsize=(4, 4))
     m = Basemap(llcrnrlon=lllon, llcrnrlat=lllat, urcrnrlon=urlon, urcrnrlat=urlat,\
                 resolution='i', projection='merc',\
