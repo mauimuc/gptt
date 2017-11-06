@@ -18,7 +18,7 @@ params = {'text.usetex' : True,
           'pgf.texsystem' : 'pdflatex',
           'figure.figsize' : (4, 4),
           'pgf.rcfonts': False, }
-plt.rcParams.update(params)
+#plt.rcParams.update(params)
 
 
 # Read coordinates of the NORSA Array
