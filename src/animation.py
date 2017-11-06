@@ -36,8 +36,9 @@ m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0)
 
 m = prepare_map(ax_sd)
 tpc_sd = ax_sd.tripcolor(x, y, np.sqrt(cov_CC.diagonal()), \
-    vmin=20, vmax=40, cmap='Reds', shading='gouraud')
+    vmin=15, vmax=40, cmap='Reds', shading='gouraud')
 cbar = m.colorbar(tpc_sd, location='bottom')
+cbar.set_ticks([15, 20, 25, 30, 35, 40])
 cbar.set_label('standard deviation')
 m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0)
 

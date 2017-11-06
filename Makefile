@@ -12,5 +12,8 @@ fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/plotting.py
 fig_correlation.pgf: ./src/fig_correlation.py ./src/plotting.py
 	cd src; python fig_correlation.py
 
+example.mp4: ./src/example.py ./src/animation.py
+	cd src; python animation.py
+
 clean:
 	rm -f *.aux *.log *.out *.pgf
