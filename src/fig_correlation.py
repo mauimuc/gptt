@@ -7,18 +7,20 @@ __license__   = "GPLv3"
 
 ''' Save a plot of the correlation kernel as PGF file '''
 
-from gptt import dt_latlon, cos_central_angle, great_circle_path, to_latlon, gauss_kernel
+from gptt import dt_latlon, cos_central_angle, gauss_kernel, StationPair
 from scipy.integrate import simps
-from plotting import np, plt, m, lllat, lllon, urlat, urlon, stations
+from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon
+from example import stations
+
+m = prepare_map()
 
 # Stations
 st1 = stations[0]
 st2 = stations[4]
 
 # Parametrization of the great circle segment
-ca12 = np.arccos(cos_central_angle(st1, st2))
-t12, ds = np.linspace(0, ca12, 25, retstep=True)
-pt12 = to_latlon(great_circle_path(st1, st2, t12))
+pair = StationPair(st1, st2, indices=range(25), error=9)
+pt12 = pair.great_circle_path
 m.plot(pt12['lon'], pt12['lat'], latlon=True, marker='.')
 
 
@@ -31,8 +33,9 @@ N = 150j
 grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
 # Correlations amongst great circle segment and grid
 ell = 15000
-K = gauss_kernel(pt12.reshape((-1,1,1)), grid, ell)
+K = gauss_kernel(pt12.reshape((-1,1,1)), grid, tau=1, ell=ell)
 # Integrate travel time
+t12 = np.linspace(0, pair.central_angle, pair.npts)
 cor_TC = simps(K, t12, axis=0)
 # Plot correlation kernel; pcolor needs points in between
 lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
@@ -42,5 +45,5 @@ plt.savefig('../fig_correlation.pgf', transparent=True, bbox_inches='tight', pad
 
 with open('../def_correlation.tex', 'w') as fh:
     fh.write(r'\def\SFWcorrell{%i}' % ell + '\n')
-    fh.write(r'\def\SFWcorrds{%.3f}' % np.rad2deg(ds) + '\n')
+    fh.write(r'\def\SFWcorrds{%.3f}' % np.rad2deg(pair.spacing) + '\n')
 

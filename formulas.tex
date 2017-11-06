@@ -109,12 +109,7 @@ The increment is chosen as
     \approx \SFWdeltaangle \,{}^\circ
 \end{equation}
 i.e.~half the shortest inter-station distance.
-
-For plotting purposes only, there is a regular $\SFWngrid \times \SFWngrid$ grid covering the domain of interest.
-
-\worries{My implementation comes with quite a number of duplicates.
 In total I am considering $\SFWnpts$ grid points.
-It were enough to consider station locations just once saving 360 points.}
 
 
 \section{Correlation Kernel}
@@ -186,16 +181,16 @@ The values I use are
 it were interesting to see how the misfit successively evolves \dots
 \begin{figure}
     \centering
-    \input{fig_example.pgf}
+    \input{fig_example_mu.pgf}
     \caption{Just considering halve the stations due to heavy memory consumption }
-    \label{fig:example}
+    \label{fig:example_mu}
 \end{figure}
 
 \begin{figure}
     \centering
-    \input{fig_example_var.pgf}
+    \input{fig_example_sd.pgf}
     \caption{posterior standard deviation; artifacts are due to single precision }
-    \label{fig:example_var}
+    \label{fig:example_sd}
 \end{figure}
 
 \end{document}
