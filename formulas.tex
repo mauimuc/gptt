@@ -164,16 +164,21 @@ the choice of $R$ determines the regularity. }
 
 Let assume an a\,priori model of constant mean velocity.
 Then, four parameters need to be determined before any inversion may be carried out.
-That are the error level $\varepsilon$ and the kernels characteristic length $\tau$, variance $\sigma$ and mean velocity $\mu_C$.
-\worries{For now I pass on that \dots }
-
-The values I use are
+That are the error level $\varepsilon$, the kernels characteristic length $\tau$, variance $\sigma$ and the a\,priori mean velocity $\mu_C$.
+Just to get some result I am using the following values:
 \begin{align}
     \varepsilon &= \SFWepsilon \, s \;,&
     \tau &= \SFWtau \, \sfrac ms \;,&
     \ell &= \SFWell \, m \;,&
     \mu_C &= \SFWmuCpri \, \sfrac ms \;.
 \end{align}
+
+Certainly, it were preferable to infer those four parameters from data.
+I don't see any difficulties using a ML estimate.
+The likelihood reads
+\begin{equation}
+    L(\theta) = \exp\{(d - E[T]) \left(\tau^2 \Sigma(\ell) + \varepsilon \right)^{-1} (d- E[T]) \}
+\end{equation}
 
 
 \section{Example}
