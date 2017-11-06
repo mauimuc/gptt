@@ -10,7 +10,8 @@ __license__   = "GPLv3"
 from file_IO import read_station_file
 from example import c_act
 from gptt import dt_latlon
-from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon, stations
+from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon
+from example import stations
 
 m = prepare_map()
 

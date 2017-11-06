@@ -9,7 +9,8 @@ __license__   = "GPLv3"
 
 from gptt import dt_latlon, cos_central_angle, gauss_kernel, StationPair
 from scipy.integrate import simps
-from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon, stations
+from plotting import np, plt, prepare_map, lllat, lllon, urlat, urlon
+from example import stations
 
 m = prepare_map()
 

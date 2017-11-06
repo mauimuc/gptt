@@ -8,7 +8,9 @@ __license__   = "GPLv3"
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
 import numpy as np
-from gptt import dt_latlon, great_circle_distance
+from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair
+from scipy.integrate import simps
+from file_IO import read_station_file
 
 def c_act(crd):
     ''' Toy model for the surface wave velocity to be recovered. '''
@@ -45,53 +47,50 @@ def misfit():
     return (np.linalg.solve(L, D - mu_D)**2).sum()
 
 
+# Read station coordinates
+stations = read_station_file('../dat/stations.dat')[::2]
+
+# Indices for all combinations of stations with duplicates dropped
+idx, idy = np.tril_indices(stations.size, -1)
+
+# Determine how fine great circle segments are going to be sampled
+central_angle = np.arccos(cos_central_angle(stations[idx], stations[idy]))
+min_samples = 2
+ds = central_angle.min()/min_samples # Spacing in [rad]
+# Number of samples per path; to suppress duplicates subtract two
+npts = np.round(central_angle/ds, 0).astype(int) - 2
+
+# Measurement noise; standard deviation
+epsilon = 0.01
+
+# Allocate memory for sampling points
+points = np.empty(npts.sum() + stations.size, dtype=dt_latlon)
+# An index keeping track where we are at the array of sampling points
+index = stations.size # The first entries are reserved for station coordinates
+# TODO Add design points; e.g. corners of the plot
+pairs = list() # Empty list to store station pairs
+for i, j, n in np.nditer( (idx, idy, npts) ):
+    indices = np.array( [i, ] + range(index, index+n) + [j, ] )
+    st_i = stations[i]
+    st_j = stations[j]
+    pair_ij = StationPair(indices=indices, error=epsilon, \
+                          st1=stations[i], st2=stations[j])
+
+    # Fill array of sampling points
+    points[indices] = pair_ij.great_circle_path
+
+    # Pseudo observations
+    pair_ij.T_act = simps(r_E/c_act(points[indices]), dx=pair_ij.spacing)
+    pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
+
+    # Append to list of station pairs
+    pairs.append(pair_ij)
+    # Increment index
+    index += n
+
 if __name__ == '__main__':
-    from file_IO import read_station_file
-    from gptt import cos_central_angle, gauss_kernel, r_E, StationPair
-    from scipy.integrate import simps
-
-
-    # Read station coordinates
-    stations = read_station_file('../dat/stations.dat')[:30]
-
-    # Indices for all combinations of stations with duplicates dropped
-    idx, idy = np.tril_indices(stations.size, -1)
-
-    # Determine how fine great circle segments are going to be sampled
-    central_angle = np.arccos(cos_central_angle(stations[idx], stations[idy]))
-    min_samples = 2
-    ds = central_angle.min()/min_samples # Spacing in [rad]
-    # Number of samples per path; to suppress duplicates subtract two
-    npts = np.round(central_angle/ds, 0).astype(int) - 2
-
-    # Measurement noise; standard deviation
-    epsilon = 0.01
-
-    # Allocate memory for sampling points
-    points = np.empty(npts.sum() + stations.size, dtype=dt_latlon)
-    # An index keeping track where we are at the array of sampling points
-    index = stations.size # The first entries are reserved for station coordinates
-    # TODO Add design points; e.g. corners of the plot
-    pairs = list() # Empty list to store station pairs
-    for i, j, n in np.nditer( (idx, idy, npts) ):
-        indices = np.array( [i, ] + range(index, index+n) + [j, ] )
-        st_i = stations[i]
-        st_j = stations[j]
-        pair_ij = StationPair(indices=indices, error=epsilon, \
-                              st1=stations[i], st2=stations[j])
-
-        # Fill array of sampling points
-        points[indices] = pair_ij.great_circle_path
-
-        # Pseudo observations
-        pair_ij.T_act = simps(r_E/c_act(points[indices]), dx=pair_ij.spacing)
-        pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
-
-        # Append to list of station pairs
-        pairs.append(pair_ij)
-        # Increment index
-        index += n
-
+    from gptt import gauss_kernel
+    from plotting import plt, prepare_map
 
     # A priori assumptions
     ell = 11000 # Characteristic length
@@ -101,7 +100,8 @@ if __name__ == '__main__':
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
     # Successively consider evidence
-    for i, pair in enumerate(pairs):
+    for i in range(len(pairs)):
+        pair = pairs[i]
         # Prior mean
         mu_T = pair.T(mu_C)
         # Correlations amongst model and travel time
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         # Update posterior co-variance
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
         # Screen output
-        print 'Combination %4s -- %-4s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
+        print 'Combination %5s -- %-5s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
 
 
     # Write parameters for being used in the LaTeX document
@@ -128,7 +128,6 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
 
 
-    from plotting import plt, prepare_map
 
 
     m = prepare_map()

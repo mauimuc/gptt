@@ -16,6 +16,7 @@ params = {'text.usetex' : True,
           'savefig.dpi': 300,
           'savefig.pad_inches': 0.0,
           'pgf.texsystem' : 'pdflatex',
+          'figure.figsize' : (4, 4),
           'pgf.rcfonts': False, }
 plt.rcParams.update(params)
 
@@ -30,12 +31,11 @@ urlon = stations['lon'].max() + 1
 urlat = stations['lat'].max() + 0.5
 
 
-def prepare_map():
+def prepare_map(ax=None):
     ''' Prepare map and plot coast lines, parallels and meridians and returns the Basemap class. '''
-    plt.figure(figsize=(4, 4))
     m = Basemap(llcrnrlon=lllon, llcrnrlat=lllat, urcrnrlon=urlon, urcrnrlat=urlat,\
                 resolution='i', projection='merc',\
-                lat_0=65, lon_0=17, lat_ts=50)
+                lat_0=65, lon_0=17, lat_ts=50, ax=ax)
     m.drawcoastlines(color='gray', linewidth=0.5)
     m.drawparallels((65,69), labels=[1,0,0,0], linewidth=0.5, dashes=(2,2))
     m.drawmeridians((15,20), labels=[0,0,1,0], linewidth=0.5, dashes=(2,2))
