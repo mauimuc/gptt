@@ -121,7 +121,8 @@ if __name__ == '__main__':
 
     # Write parameters for being used in the LaTeX document
     with open('../def_example.tex', 'w') as fh:
-        fh.write(r'\def\SFWnobs{%i}' % stations.size + '\n')
+        fh.write(r'\def\SFWnst{%i}' % stations.size + '\n')
+        fh.write(r'\def\SFWnobs{%i}' % len(pairs) + '\n')
         fh.write(r'\def\SFWminsamples{%i}' % min_samples + '\n')
         fh.write(r'\def\SFWdeltaangle{%.3f}' % np.rad2deg(ds) + '\n')
         fh.write(r'\def\SFWtau{%i}' % tau + '\n')

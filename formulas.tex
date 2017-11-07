@@ -11,6 +11,12 @@
 
 \newcommand{\mypath}{.}
 \newcommand\worries[1]{\textcolor{red}{#1}}
+\newcommand\Mean[1]{\mathbb{E}\!\left[#1\right]}
+\newcommand\Var[1]{\mathbb{V}\!\left[#1\right]}
+\newcommand\Cov[2]{\mathrm{Cov}\!\left[#1,#2\right]}
+\newcommand\Gauss[2]{\mathcal{N}\!\left({#1},\,{#2}\right)}
+\newcommand\GP[2]{\mathcal{GP}\!\left({#1},\,{#2}\right)}
+\DeclareMathOperator*{\argmin}{arg\,min}
 
 \title{Correlation Based Surface Wave Tomography}
 \author{Stefan Mauerberger}
@@ -23,7 +29,7 @@
     The following is just a brief description of the experiment and a summary of formulas I am using.
 \end{abstract}
 
-\section{Setting}
+\section{Introduction}
 \input{def_example}
 
 Use Gaussian process regression together with an underlying correlation structure for surface wave tomography.
@@ -35,66 +41,69 @@ The average slowness amongst station pairs are obtained from cross correlations.
 To avoid the difficulty of dispersion, only a narrow frequency band shall be considered.
 Diffraction is neglected to simplify things even further.
 Then, the ray path between stations is approximated by a great circle segment.
-Travel times amongst stations are given by distances times the average slowness.
+Travel times amongst stations are given by distance times the average slowness.
 \worries{Actually, retrieving travel times that way is going round in circles.
-It is the ray path -- i.e.~the distance -- what I am uncertain about!}
+It is the ray path -- i.e.~the distance -- depending upon the model which in turn is unknown!
+Although the average slowness is a decent observable, I stay with travel times since this is what I begun working with.}
 
-This is going to be a synthetic test, only.
-The reference model $\tilde c$ is of constant velocity $4\,\sfrac{km}s$ perturbed by two blobs, just large scale anomalies.
+\section{Setting}
+
+This is going to be a synthetic test.
+The reference model $\tilde v$ is of constant velocity $4\,\sfrac{km}s$ perturbed by two blobs, just large scale anomalies.
 At their maximum those blobs are showing a deviation of about $\pm 1\%$ and a characteristic length of $50\,km$.
 To proceed with a partly realistic setting the station geometry is borrowed from a subset of the ScanArray (DOI: 10.14470/6T569239).
-Due to computational limitations I am just considering \SFWnobs\ stations.
+Due to computational limitations I am just considering $\SFWnst$ stations.
 Figure~\ref{fig:path_coverage} depicts the reference velocity model with the path coverage atop.
 
 \begin{figure}
     \centering
     \input{fig_path_coverage.pgf}
-    \caption{Atop of the reference velocity model $\tilde c$ the station geometry and path coverage are outlined. }
+    \caption{Atop of the reference velocity model $\tilde v$ the station geometry and path coverage are outlined. }
     \label{fig:path_coverage}
 \end{figure}
 
-Pseudo observations are generated from the reference velocity model considering all pairs of stations.
+Pseudo observations $d$ are generated from the reference velocity model considering all pairs of stations.
 Synthetic travel times are obtained by integrating the slowness along the great circle segment.
 To simulate measurement noise the set of pseudo observations is corrupted by normal noise of standard deviation $\sigma_\varepsilon = \SFWepsilon$\,.
+In total that are $\SFWnobs$ observations.
 
 
 \section{Line Integral along a Great Circle Segment}
-In the oversimplified setting the ray path is given by the shortest distance between two points $u$, $v$ on the surface of a sphere.
-\worries{I would use other point variables since u is reserved for group velocites and v is rather a velocity. Just to keep in mind that you once can derive group and phase velocity from your code. use A and B}
+
+In the oversimplified setting the ray path is given by the shortest distance between two points $a$, $b$ at the Earth's surface.
 The central angle is given by
-\begin{align}
-    \cos \sphericalangle_u^v &= \frac{u \cdot v}{|u||v|} &
-    &\text{or}&
-    \sin \sphericalangle_u^v &= \frac{|u \times v|}{|u||v|}
-    \; .
-\end{align}
-To integrate along the ray path, a parametrizing equation of the greate circle passing through $u$ and $v$ is required.
+\begin{equation}
+    \cos \sphericalangle_a^b %= \frac{a \cdot b}{|a||b|}
+    = \sin\phi_a\sin\phi_b + \cos\phi_a\cos\phi_b \cos(\lambda_a - \lambda_b)
+\end{equation}
+with $\phi$ and $\lambda$ referring to latitude and longitude.
+To integrate along the ray path, a parametrizing equation of the grate circle passing through $a$ and $b$ is required.
 With respect to a Cartesian coordinate frame such a parametrization is of the form
 \begin{equation}
-    r(t) = u \cos t + w \sin t
+    r(t) = a \cos t + w \sin t
 \end{equation}
-with $t \in [0:2\pi$] and to be determined $w$.
-For $w$ we find
+with $t \in [0:2\pi]$.
+$w$ is determined by
 \begin{align}
-    v &= r(t = \sphericalangle_u^v) &
+    b &= r(t = \sphericalangle_a^b) &
     &\leadsto &
-    w &= \frac{v - u \cos \sphericalangle_u^v}{\sin \sphericalangle_u^v}
+    w &= \frac{b - a \cos \sphericalangle_a^b}{\sin \sphericalangle_a^b}
     \; .
 \end{align}
-The segment between $u$ and $v$ is given by $C= \{r(t) \mid t \in [0, \sphericalangle_u^v]\}$.
-Travel times are calculated by carrying out the line integral along the great circle segment
+The segment between $a$ and $b$ is given by $C= \{r(t) \mid t \in [0, \sphericalangle_a^b]\}$.
+
+Now we can calculate travel times by carrying out the line integral along the great circle segment
 \begin{equation}
-    T_{u,v}[s]
-    = \int_C \frac1{c(r)} \mathrm d r
-    = \int_0^{\sphericalangle_u^v} \frac 1{c(r(t))} |\acute r(t)| \mathrm d t
+    \mathrm T_{a,b}[v]
+    = \int_C \frac1{v(r)} \mathrm d r
+    = \int_0^{\sphericalangle_a^b} \frac 1{v(r(t))} |\acute r(t)| \mathrm d t
 \end{equation}
-where $c$ refers to a velocity model.
-\worries{c is commonly used for a phase velocity..maybe misleading in that context}
-The length of a line element on a great circle is given by
+where $v$ refers to a velocity model.
+The length of a line element is given by
 \begin{equation}
     |\acute c(t)| = |w \cos t - u \sin t| = ??? = r_E
-    \; .
 \end{equation}
+where $r_E$ refers to the Earth's radius.
 
 
 \section{Discretization}
@@ -105,7 +114,7 @@ Therefore, it is necessary to discretize the great circle segment for all statio
 All the segments are sampled at almost the same spacing.
 The increment is chosen as
 \begin{equation}
-    \Delta\sphericalangle = \frac 1 \SFWminsamples \min\left\{ \sphericalangle_u^v \mid u,v \in S \right\}
+    \Delta\sphericalangle = \frac 1 \SFWminsamples \min\left\{ \sphericalangle_a^b \mid a,b \in S \right\}
     \approx \SFWdeltaangle \,{}^\circ
 \end{equation}
 i.e.~half the shortest inter-station distance.
@@ -116,15 +125,15 @@ The resulting grid totaling to a $\SFWnpts$ points is depicted in Figure~\ref{fi
 \section{Correlation Kernel}
 
 Typically, the Gaussian kernel is expressed in terms of the euclidean distance.
-As we consider waves traveling along the surface only, the great circle segment is the desired measure of distance.
-At the surface, the shortest distance between two points $u$, $v$ is given by
+As we consider waves traveling along the surface, the great circle segment is the desired measure of distance.
+At the surface, the shortest distance between two points $x$, $y$ is given by
 \begin{equation}
-    d(u,v) = \sphericalangle_u^v r_E
+    d(x,y) = \sphericalangle_x^y r_E
 \end{equation}
-with values in $[0, \pi R]$.
+with values in $[0, \pi r_E]$.
 The so called great circle distance $d$ shall serve as metric and the correlation kernel of choice reads
 \begin{equation}
-    K(u,v) = \tau^2 \exp\!\left(-\frac 12 \frac{d(u,v)^2}{\ell^2}\right)
+    K(x,y) = \tau^2 \exp\!\left(-\frac 12 \frac{d(x,y)^2}{\ell^2}\right)
 \end{equation}
 with characteristic length $\ell$ and variance $\tau^2$.
 %That Kernel has an upper and lower bound
@@ -140,6 +149,7 @@ with characteristic length $\ell$ and variance $\tau^2$.
 %\end{equation}
 %where $\varepsilon$ refers to the lower bound of $K$.
 
+\subsection{Poisson Kernel}
 \worries{Matthias suggested to use a Poisson type kernel.
 \begin{equation}
     u(x) \propto \iint \frac{R-|x|}{|x-\xi|^3} u(\xi) \, \mathrm d \xi
@@ -149,7 +159,6 @@ Consider white noise at some reference radius $R$ and the covariance is
     K(x,y) \propto \iint \frac{R-|x|}{|x-\xi|^3} \frac{R-|y|}{|y-\xi|^3} \, \mathrm d \xi
 \end{equation}
 the choice of $R$ determines the regularity. }
-
 
 \begin{figure}
     \centering
@@ -164,7 +173,7 @@ the choice of $R$ determines the regularity. }
 
 Let assume an a\,priori model of constant mean velocity.
 Then, four parameters need to be determined before any inversion may be carried out.
-That are the error level $\varepsilon$, the kernels characteristic length $\tau$, variance $\sigma$ and the a\,priori mean velocity $\mu_C$.
+That are the error level $\varepsilon$, the kernels characteristic length $\tau$, variance $\sigma$ and the a\,priori mean velocity $\mu_V$.
 Just to get some result I am using the following values:
 \begin{align}\label{eq:parameters}
     \varepsilon &= \SFWepsilon \, s \;,&
@@ -174,22 +183,44 @@ Just to get some result I am using the following values:
 \end{align}
 
 Certainly, it were preferable to infer those four parameters from data.
-I don't see any difficulties using a ML estimate.
-The likelihood reads
+I don't see any difficulties using an ordinary ML estimate.
+The log likelihood function reads
 \begin{equation}
-    L(\theta) = \exp\{(d - E[T]) \left(\tau^2 \Sigma(\ell) + \varepsilon \right)^{-1} (d- E[T]) \}
+    -\frac 12 \left( n \ln 2\pi + n \ln |\Var D| + (D - \Mean D)^T \dots  \right)
 \end{equation}
 
 
-\section{Example}
+\section{Formulas}
 
-it were interesting to see how the misfit successively evolves \dots
+Linearizing the travel time, the correlation amongst velocity model and travel time reads
+\begin{equation}
+    \Cov{V(x)}{T_C[V]} \approx -\int_C \frac{K_V(x,y)}{\mu_V(y)^2}  \mathrm d y
+\end{equation}
+An example is shown in Figure~\ref{fig:correlation}.
+Use a successive approach to build the posterior
+\begin{alignat}{3}
+    \Mean{V|d_{i+1}} &\approx \Mean{V|d_i} &&+ \Cov{V}{T_C[V]}\Var{D}^{-1} \left(d_{i+1}-\Mean{T_C[V]}\right)
+    \\
+    \Var{V|d_{i+1}}  &\approx \Var{V|d_i}  &&- \Cov{V}{T_C[V]}\Var{D}^{-1}  \Cov{T_C[V]}{V}
+\end{alignat}
+The result is shown in Figure~\ref{fig:example}. The parameters used are listed in Equation~\ref{eq:parameters}.
+The small scale patches are suggesting to increase the characteristic length.
+
 \begin{figure}
     \centering
     \input{fig_example.pgf}
-    \caption{Just considering halve the stations due to heavy memory consumption }
+    \caption{The left panel shows the posterior mean velocity model whereas the left depicts posterior variances. }
     \label{fig:example}
 \end{figure}
+
+
+\section{Next Steps}
+
+\begin{itemize}
+    \item It were interesting to see how the misfit successively evolves
+    \item Estimate parameters
+\end{itemize}
+
 
 
 \end{document}
