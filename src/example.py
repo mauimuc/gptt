@@ -88,13 +88,15 @@ for i, j, n in np.nditer( (idx, idy, npts) ):
     # Increment index
     index += n
 
+ell = 11000 # Characteristic length
+tau = 40  # A priori uncertainty; standard deviation
+
 if __name__ == '__main__':
     from gptt import gauss_kernel
-    from plotting import plt, prepare_map
+    from matplotlib import pyplot as plt
+    from plotting import prepare_map, rcParams
 
     # A priori assumptions
-    ell = 11000 # Characteristic length
-    tau = 40  # A priori uncertainty; standard deviation
     mu_C = mu_C_pri(points) # The velocity models a priori mean
     # A priori covariance
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
@@ -115,6 +117,7 @@ if __name__ == '__main__':
         # Screen output
         print 'Combination %5s -- %-5s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
 
+    var_C = np.sqrt(cov_CC.diagonal())
 
     # Write parameters for being used in the LaTeX document
     with open('../def_example.tex', 'w') as fh:
@@ -129,25 +132,27 @@ if __name__ == '__main__':
 
 
 
+    plt.rcParams.update(rcParams)
+    fig = plt.figure(figsize=(6.5,4))
+    fig.subplots_adjust(wspace=0.02)
 
-    m = prepare_map()
+    ax_mu = fig.add_subplot(121)
+    m = prepare_map(ax_mu)
     x, y = m(points['lon'], points['lat'])
-    pcol = plt.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
-    cbar = m.colorbar(pcol, location='right', pad="5%")
-    ticks = np.linspace(3950, 4050, 5)
-    cbar.set_ticks(ticks)
-    cbar.set_label(r'$\frac ms$', rotation='horizontal')
+    pcol = ax_mu.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
+    cbar = m.colorbar(pcol, location='bottom', pad="5%")
+    cbar.set_ticks([3950, 3975, 4000, 4025, 4050])
     cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', s=2)
-    plt.savefig('../fig_example_mu.pgf', bbox_inches='tight')
-    plt.close()
+    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
 
-    m = prepare_map()
-    var_C = np.sqrt(cov_CC.diagonal())
-    pcol = plt.tripcolor(x, y, var_C, cmap='Reds', rasterized=True)
-    cbar = m.colorbar(location='right', pad="5%")
+    ax_sd = fig.add_subplot(122)
+    m = prepare_map(ax_sd, pls=[0,0,0,0])
+    pcol = ax_sd.tripcolor(x, y, var_C, cmap='Reds', vmin=20, rasterized=True)
+    cbar = m.colorbar(pcol, location='bottom', pad="5%")
+    cbar.set_ticks([20, 25, 30, 35])
     cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', s=2)
-    plt.savefig('../fig_example_sd.pgf', bbox_inches='tight')
+    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
+
+    plt.savefig('../fig_example.pgf', bbox_inches='tight')
 
 

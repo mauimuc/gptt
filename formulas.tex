@@ -49,7 +49,7 @@ Figure~\ref{fig:path_coverage} depicts the reference velocity model with the pat
 \begin{figure}
     \centering
     \input{fig_path_coverage.pgf}
-    \caption{Path coverage of the Array}
+    \caption{Atop of the reference velocity model $\tilde c$ the station geometry and path coverage are outlined. }
     \label{fig:path_coverage}
 \end{figure}
 
@@ -109,7 +109,8 @@ The increment is chosen as
     \approx \SFWdeltaangle \,{}^\circ
 \end{equation}
 i.e.~half the shortest inter-station distance.
-In total I am considering $\SFWnpts$ grid points.
+Although that discretization is highly irregular it is handy for numeric integration.
+The resulting grid totaling to a $\SFWnpts$ points is depicted in Figure~\ref{fig:correlation}.
 
 
 \section{Correlation Kernel}
@@ -151,11 +152,10 @@ the choice of $R$ determines the regularity. }
 
 
 \begin{figure}
-    \input{def_correlation}
     \centering
     \input{fig_correlation.pgf}
-    \caption{Correlation amongst a constant velocity model and a travel time observation.
-        The kernel's characteristic length is $\ell=\SFWcorrell\,m$ and the path discretization is $\Delta = \SFWcorrds\,{}^\circ$. }
+    \caption{Example for correlations amongst travel time and a constant velocity model (parameters are listed in Eq.~\ref{eq:parameters}).
+        In addition the overall discretization of is shown. }
     \label{fig:correlation}
 \end{figure}
 
@@ -166,7 +166,7 @@ Let assume an a\,priori model of constant mean velocity.
 Then, four parameters need to be determined before any inversion may be carried out.
 That are the error level $\varepsilon$, the kernels characteristic length $\tau$, variance $\sigma$ and the a\,priori mean velocity $\mu_C$.
 Just to get some result I am using the following values:
-\begin{align}
+\begin{align}\label{eq:parameters}
     \varepsilon &= \SFWepsilon \, s \;,&
     \tau &= \SFWtau \, \sfrac ms \;,&
     \ell &= \SFWell \, m \;,&
@@ -186,17 +186,11 @@ The likelihood reads
 it were interesting to see how the misfit successively evolves \dots
 \begin{figure}
     \centering
-    \input{fig_example_mu.pgf}
+    \input{fig_example.pgf}
     \caption{Just considering halve the stations due to heavy memory consumption }
-    \label{fig:example_mu}
+    \label{fig:example}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \input{fig_example_sd.pgf}
-    \caption{posterior standard deviation; artifacts are due to single precision }
-    \label{fig:example_sd}
-\end{figure}
 
 \end{document}
 
