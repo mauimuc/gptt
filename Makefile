@@ -12,5 +12,8 @@ fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/example.py
 fig_correlation.pgf: ./src/fig_correlation.py ./src/example.py
 	cd src; python fig_correlation.py
 
+presentation.pdf: presentation.tex
+	pdflatex presentation
+
 clean:
 	rm -f *.aux *.log *.out *.pgf

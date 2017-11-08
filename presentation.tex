@@ -1,0 +1,185 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Boadilla}
+\beamertemplatenavigationsymbolsempty
+
+\usepackage{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{pgfplots}
+\usepackage{mathtools}
+\mathtoolsset{showonlyrefs}
+\usepackage{qrcode}
+\usepackage{multimedia}
+
+\newcommand\Mean[1]{\mathbb{E}\!\left[#1\right]}
+\newcommand\Var[1]{\mathbb{V}\!\left[#1\right]}
+\newcommand\Cov[2]{\mathrm{Cov}\!\left[#1,#2\right]}
+\newcommand\Gauss[2]{\mathcal{N}\!\left({#1},\,{#2}\right)}
+\newcommand\GP[2]{\mathcal{GP}\!\left({#1},\,{#2}\right)}
+
+\title[Correlation based travel time inversion]{Bayesian Travel Time Inversion adopting Gaussian Process Regression}
+\subtitle{-- with a focus on uncertainty analysis --}
+\author[\tt mauerber@uni-potsdam.de]{Stefan Mauerberger \and Matthias Holschneider}
+\institute[Math@UP]{University Potsdam, Institute of Mathematics}
+\titlegraphic{%\vspace{-1cm}
+              \hspace{2cm}
+              \parbox[c]{0.17\linewidth}{\includegraphics[width=\linewidth]{./logos/GeoSim_Logo}}
+              \hfill
+              \parbox[c]{0.10\linewidth}{\includegraphics[width=\linewidth]{./logos/UniPotsdam_Logo}}
+              \hspace{2cm}
+              }
+\date[AGU~2017]{AGU Fall Meeting -- 13\textsuperscript{th} December 2017}
+
+\begin{document}
+
+\frame[noframenumbering, plain]
+    {\maketitle}
+
+\begin{frame}
+    \frametitle{Outline -- Where are we driving at?}
+    \framesubtitle{Surface Wave Tomography}
+
+\begin{columns}
+\column{.5\textwidth}
+    proof of concept -- synthetic test
+
+    Dispersion narrow frequency band
+    Refraction great circle path
+
+\column{.5\textwidth}
+    figure with stations
+    and reference model
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Travel Time Observations}
+    \framesubtitle{the forward problem}
+
+\begin{columns}
+\column{.5\textwidth}
+
+    \begin{equation}
+        d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
+    \end{equation}
+
+    \begin{description}[leftmargin=! ,labelwidth=6cm]
+        \item [Actual observation]       $d$
+        \item [Source location]          $s$
+        \item [Receiver position]        $r$
+        \item [Observational functional] $T_{s,r}[\cdot]$
+        \item [Velocity model]           $v$
+        \item [Ray path]                 $C$
+        \item [Measurement error]        $\varepsilon$
+    \end{description}
+
+    \begin{alertblock}{It is the velocity model what we are after}
+    $T_{s,r}$ puts an Integral-constraint on $v$
+    \end{alertblock}
+
+\column{.5\textwidth}
+    figure with ray paths and reference model \\
+    190 pseudo observations
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Velocity Model}
+    \framesubtitle{Expressing our ignorance}
+
+\begin{columns}
+\column{.5\textwidth}
+    \begin{equation}
+        v \to V \sim \GP{\mu_V}{K_V}
+    \end{equation}
+    Capital letters are hinting at random quantities
+
+    \begin{description}[leftmargin=! ,labelwidth=6cm]
+        \item [A\,priori mean function] $\mu_V(x)$
+        \item [Covariance function]     $K_V(x,y))$
+    \end{description}
+\column{.5\textwidth}
+    figure with covariance
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Linearization and Data Model}
+    \framesubtitle{\dots}
+
+    1\textsuperscript{st} order Taylor expansion; $\mu_V$ serves as point of expansion
+    \begin{equation}
+        T_{s,r}[v] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
+    \end{equation}
+
+    \begin{equation}
+        D = T + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
+    \end{equation}
+
+    \begin{description}[leftmargin=! ,labelwidth=6cm]
+        \item [Error model]            $\displaystyle E\sim \Gauss{0}{\sigma_\varepsilon^2}$
+        \item [A\,priori travel times] $\displaystyle \mu_D = \Mean{T_{s,r}[\mu_V]}$
+        \item [Data covariance matrix] $\displaystyle \Sigma_{DD} = \Var{D} = \int_C \int_{\acute C} \frac{K(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r + \sigma_\varepsilon^2$
+    \end{description}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Bayesian Posterior Distribution}
+    \framesubtitle{Gaussian Process Regression}
+
+\begin{columns}
+\column{.5\textwidth}
+    \begin{alignat}{3}
+        \Mean{V|d} &= \mu_V &&+ \Cov{V}{D} \Var{D}^{-1} \big( d - \Mean{D} \big)
+        \\
+        \Var{V|d}  &= K_V   &&- \Cov{V}{D} \Var{D}^{-1} \Cov{V}{D}
+    \end{alignat}
+
+    Approximate Correlations
+    \begin{equation}
+        \Cov{V}{D} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
+    \end{equation}
+\column{.5\textwidth}
+    figure with correlation kernel
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Successive Approach}
+    \framesubtitle{bringing back a little of non-linearity}
+
+    Do not consider evidence all at once.
+
+    Build the posterior step by step
+    \begin{alignat}{4}
+        \Mean{V_{i+1}} &=
+        \Mean{V_i|d_{i+1}} &&=
+        \Mean{V_i} &&+ \Cov{V_i}{T_{s,r_{i+1}}[V_i]} \Var{D_{i+1}[V_i]}^{-1} \big(d_{i+1} - \Mean{T_{s,r_{i+1}}[V_i]} \! \big)
+        \\
+        \Var{V_{i+1}} &=
+        \Var{V_i|d_{i+1}} &&=
+        \Var{V_i}  &&- \Cov{V_i}{T_{s,r_{i+1}}[V_i]} \Var{D_{i+1}[V_i]}^{-1} \Cov{T_{s,r_{i+1}}[V_i]}{V_i}
+    \end{alignat}
+
+    Correlations and variances are obtained from the predecessor model
+
+\end{frame}
+
+
+\begin{frame}[plain]
+    put the movie here
+    %\movie[height=\textheight, width=\textwidth, autostart]{}{example.mp4}
+\end{frame}
+
+\begin{frame}[noframenumbering, plain]
+    \hspace{15mm} Follow the project on GitHub \\[1cm]
+    \hfill \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}} \hspace{20mm}
+\end{frame}
+
+\end{document}
