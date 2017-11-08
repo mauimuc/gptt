@@ -15,5 +15,8 @@ fig_correlation.pgf: ./src/fig_correlation.py ./src/example.py
 presentation.pdf: presentation.tex
 	pdflatex presentation
 
+animation.mp4 animation.png: ./src/example.py ./src/animation.py
+	cd src; python animation.py
+
 clean:
 	rm -f *.aux *.log *.out *.pgf
