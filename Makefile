@@ -12,7 +12,7 @@ fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/example.py
 fig_correlation.pgf: ./src/fig_correlation.py ./src/example.py
 	cd src; python fig_correlation.py
 
-presentation.pdf: presentation.tex
+presentation.pdf: presentation.tex animation.mp4 animation.png
 	pdflatex presentation
 
 animation.mp4 animation.png: ./src/example.py ./src/animation.py
