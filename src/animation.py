@@ -31,17 +31,17 @@ tpc_mu = ax_mu.tripcolor(x, y, mu_C, \
 cbar = m.colorbar(tpc_mu, location='bottom')
 ticks = np.linspace(3950, 4050, 3)
 cbar.set_ticks(ticks)
-cbar.set_label('mean')
-m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0)
+#cbar.set_label('mean')
+m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
 
 # Subplot right
 m = prepare_map(ax_sd, pls=[0,0,0,0])
 tpc_sd = ax_sd.tripcolor(x, y, np.sqrt(cov_CC.diagonal()), \
-    vmin=15, vmax=40, cmap='Reds', shading='gouraud')
+    vmin=15, vmax=40, cmap='Purples', shading='gouraud')
 cbar = m.colorbar(tpc_sd, location='bottom')
 cbar.set_ticks([15, 20, 25, 30, 35, 40])
-cbar.set_label('standard deviation')
-m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0)
+#cbar.set_label('standard deviation')
+m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
 
 # First frame; Necessary for LaTeX beamer
 plt.savefig('../animation.png', dpi=150)

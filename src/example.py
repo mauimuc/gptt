@@ -88,7 +88,7 @@ for i, j, n in np.nditer( (idx, idy, npts) ):
     # Increment index
     index += n
 
-ell = 11000 # Characteristic length
+ell = 16000 # Characteristic length
 tau = 40  # A priori uncertainty; standard deviation
 
 if __name__ == '__main__':

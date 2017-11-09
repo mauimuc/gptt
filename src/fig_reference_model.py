@@ -11,20 +11,16 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon
 from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from example import pairs, c_act
+from example import pairs, stations, c_act
 
 
 # Prepare map
-fig = plt.figure(figsize=(4,4))
+fig = plt.figure(figsize=(3,3))
 plt.rcParams.update(rcParams)
 m = prepare_map()
 
-# Plot great circle for all combinations
-for pair in pairs:
-    m.drawgreatcircle(pair.st1['lon'], pair.st1['lat'], \
-                      pair.st2['lon'], pair.st2['lat'], \
-                      linewidth=0.5, color='g', alpha=0.5)
-
+# Stations
+m.scatter(stations['lon'], stations['lat'], lw=0, latlon=True, color='green', zorder=1)
 
 # Make a lat lon grid with extent of the map
 N = 30j
@@ -33,10 +29,17 @@ c = c_act(grid) # Actual velocity model
 
 # Plot velocity model
 m.imshow(c, cmap='seismic', vmin=3940, vmax=4060)
-cbar = m.colorbar(location='right', pad="5%")
+cbar = m.colorbar(location='bottom', pad="5%")
 ticks = np.linspace(3950, 4050, 5)
 cbar.set_ticks(ticks)
-cbar.set_label(r'$\frac ms$', rotation='horizontal')
+cbar.set_label(r'$\frac ms$')
 cbar.solids.set_edgecolor("face")
-plt.savefig('../fig_path_coverage.pgf', transparent=True, bbox_inches='tight', pad_inches=0.01)
+plt.savefig('../fig_reference_model.pgf')
 
+# Plot great circle for all combinations
+for pair in pairs:
+    m.drawgreatcircle(pair.st1['lon'], pair.st1['lat'], \
+                      pair.st2['lon'], pair.st2['lat'], \
+                      linewidth=0.5, color='g', alpha=0.5)
+
+plt.savefig('../fig_path_coverage.pgf')

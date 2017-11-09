@@ -15,24 +15,24 @@ from plotting import rcParams, prepare_map
 from example import stations, pairs, ell, tau, points
 
 # Prepare map
-plt.figure(figsize=(4,4))
+plt.figure(figsize=(3,3))
 plt.rcParams.update(rcParams)
 m = prepare_map()
 
+sct = m.scatter(points['lon'], points['lat'], lw=0, marker='.', s=5, latlon=True, color='g')
+plt.savefig('../fig_discretization.pgf')
+sct.remove()
 
-# Plot discretization
-m.scatter(points['lon'], points['lat'], s=1, marker='.', color='k', latlon=True)
 # Plot stations
-m.scatter(stations['lon'], stations['lat'], s=15, marker='.', color='g', latlon=True)
+m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
+
 # Find stations which are the furtherest apart
 pair = max(pairs, key=lambda pair: pair.central_angle)
-# Highlight parametrization of the great circle segment
+# Parametrization of the great circle path
 pt12 = pair.great_circle_path
-m.plot(pt12['lon'], pt12['lat'], latlon=True, lw=0.5, color='b')
-m.scatter(pt12['lon'][1:-1], pt12['lat'][1:-1], latlon=True, s=1, marker='.', color='b')
 
 # Make a lat lon grid with extent of the map
-N = 150j
+N = 200j
 lllat = min(pair.st1['lat'], pair.st2['lat']) - 0.5
 urlat = max(pair.st1['lat'], pair.st2['lat']) + 0.5
 lllon = min(pair.st1['lon'], pair.st2['lon']) - 1
@@ -41,15 +41,32 @@ grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon
 
 # Calculate Correlations amongst great circle segment and grid
 K = gauss_kernel(pt12.reshape((-1,1,1)), grid, tau=tau, ell=ell)
-# Integrate travel time
-cor_TC = simps(K, dx=pair.spacing, axis=0)
-cor_TC = cor_TC/cor_TC.max()
-cor_TC = np.ma.masked_array(cor_TC, cor_TC<0.05)
 
 # Plot correlation kernel; pcolor needs points in between
 lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
-m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='seismic', vmin=-1, vmax=1, rasterized=True, zorder=0)
+KK = np.ma.masked_less((K[4] + K[14])/K.max(), 0.01)
+pcol = m.pcolormesh(lon, lat, KK, latlon=True, cmap='Purples', vmin=0, vmax=1, rasterized=True, zorder=1)
 
-plt.savefig('../fig_correlation.pgf', transparent=True, bbox_inches='tight', pad_inches=0.01)
+cbar = m.colorbar(location='bottom', pad="5%")
+cbar.set_ticks([0, 0.25, 0.5, 0.75, 1])
+cbar.solids.set_edgecolor("face")
+
+plt.savefig('../fig_kernel.pgf')
+pcol.remove()
+
+# Highlight parametrization of the great circle segment
+m.plot(pt12['lon'], pt12['lat'], latlon=True, lw=0.5, color='g')
+m.scatter(pt12['lon'][1:-1], pt12['lat'][1:-1], latlon=True, s=1, marker='.', color='g')
+
+# Integrate travel time
+cor_TC = simps(K, dx=pair.spacing, axis=0)
+cor_TC = cor_TC/cor_TC.max()
+cor_TC = np.ma.masked_array(cor_TC, cor_TC<0.01)
+
+# Plot correlation kernel; pcolor needs points in between
+lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
+m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='Purples', vmin=0, vmax=1, rasterized=True, zorder=0)
+
+plt.savefig('../fig_correlation.pgf')
 
 
