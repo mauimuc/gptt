@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169]{beamer}
+\documentclass[aspectratio=169, t, 10pt]{beamer}
 \usetheme{Boadilla}
 \beamertemplatenavigationsymbolsempty
 
@@ -40,25 +40,25 @@
     \framesubtitle{Surface Wave Tomography}
 
 \begin{columns}
-\column{.5\textwidth}
+\column{.55\textwidth}
     proof of concept -- synthetic test
 
     Dispersion narrow frequency band
     Refraction great circle path
 
-\column{.5\textwidth}
-    figure with stations
-    and reference model
+\column{.44\textwidth}
+    \vspace{-15mm}
+    \input{fig_reference_model.pgf}
 \end{columns}
 
 \end{frame}
 
 \begin{frame}
     \frametitle{Travel Time Observations}
-    \framesubtitle{the forward problem}
+    \framesubtitle{Surface Wave Tomography}
 
 \begin{columns}
-\column{.5\textwidth}
+\column{.55\textwidth}
 
     \begin{equation}
         d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
@@ -78,9 +78,9 @@
     $T_{s,r}$ puts an Integral-constraint on $v$
     \end{alertblock}
 
-\column{.5\textwidth}
-    figure with ray paths and reference model \\
-    190 pseudo observations
+\column{.44\textwidth}
+    \vspace{-15mm}
+    \input{fig_reference_model.pgf}
 
 \end{columns}
 
