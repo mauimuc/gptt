@@ -32,23 +32,36 @@
 \date[AGU~2017]{AGU Fall Meeting -- 13\textsuperscript{th} December 2017}
 
 \begin{document}
+\input{def_example}
 
 \frame[noframenumbering, plain]
     {\maketitle}
 
 \begin{frame}
     \frametitle{Outline -- Where are we driving at?}
-    \framesubtitle{Surface Wave Tomography}
+    \framesubtitle{Surface Wave Tomography -- Having an application with ambient noise records in mind }
 
 \begin{columns}
 \column{.55\textwidth}
-    proof of concept -- synthetic test
 
-    Dispersion narrow frequency band
-    Refraction great circle path
+    Simplifications
+    \begin{itemize}
+        \item Synthetic test
+        \item Proof of concept
+        \item No dispersion
+        \item No refraction
+    \end{itemize}
 
-\column{.44\textwidth}
-    \vspace{-15mm}
+    Setting
+    \begin{itemize}
+        \item Subset of ScanArray \SFWnst
+        \item Two large scale anomalies
+        \item Pseudo observations
+    \end{itemize}
+
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
     \input{fig_reference_model.pgf}
 \end{columns}
 
@@ -59,13 +72,11 @@
     \framesubtitle{Surface Wave Tomography}
 
 \begin{columns}
-\column{.55\textwidth}
-
+\column{.55\textwidth}%
     \begin{equation}
         d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
     \end{equation}
-
-    \begin{description}[leftmargin=! ,labelwidth=6cm]
+    \begin{description}[leftmargin=! ,labelwidth=1cm]
         \item [Actual observation]       $d$
         \item [Source location]          $s$
         \item [Receiver position]        $r$
@@ -76,58 +87,60 @@
     \end{description}
 
     \begin{alertblock}{It is the velocity model what we are after}
-    $T_{s,r}$ puts an Integral-constraint on $v$
+    Travel times are putting an Integral-constraint on $v$
     \end{alertblock}
 
-\column{.44\textwidth}
-    \vspace{-15mm}
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
     \input{fig_path_coverage.pgf}
 
 \end{columns}
 
 \end{frame}
 
+
 \begin{frame}
     \frametitle{A\,Priori Velocity Model}
     \framesubtitle{expressing our ignorance}
 
 \begin{columns}
-\column{.55\textwidth}
-
+\column{.55\textwidth}%
+    \begin{block}{Model $v(x)$ a Gaussian Random Field}
     \begin{equation}
         v \to V \sim \GP{\mu_V}{K_V}
     \end{equation}
     \begin{description}[leftmargin=! ,labelwidth=6cm]
-        \item [A\,priori mean function] $\mu_V(x) = 4\,\frac ks$
-        \item [Covariance function]     $K_V(x,y))$
+        \item [Prior mean function] $\mu_V(x) = \SFWmuCpri \, \frac ms$
+        \item [Covariance function] $K_V(x,y)$
     \end{description}
-    \bigskip
+    \end{block}
+    \medskip
 
     Correlation Kernel
     \begin{equation}
         K_V(x,y) = \tau^2 \exp\left\{ -\frac12 \frac{d(x,y)^2}{\ell^2}\right\}
     \end{equation}
     \begin{description}[leftmargin=! ,labelwidth=6cm]
-        \item [Variance]              $\tau^2$
+        \item [Standard deviation]   $\tau = \SFWtau \, \frac ms$
         \item [Great circle distance] $d(x,y)$
-        \item [Characteristic lenth]  $\ell$
+        \item [Characteristic lenth]  $\ell = \SFWell \, m$
     \end{description}
 
-\column{.44\textwidth}
-    \vspace{-15mm}
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
     \input{fig_kernel.pgf}
 
 \end{columns}
 
 \end{frame}
 
+
 \begin{frame}
-    \frametitle{Linearization, Data Model and Discretization}
+    \frametitle{Linearization}
     \framesubtitle{to preserve Gaussianity}
 
 \begin{columns}
-\column{.55\textwidth}
-
+\column{.55\textwidth}%
     \begin{equation}
         T_{s,r}[v] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
     \end{equation}
@@ -135,51 +148,64 @@
         \item [Taylor expansion] 1\textsuperscript{st} order
         \item [point of expansion] $\mu_V$
     \end{description}
-    \bigskip
+    \medskip
 
-    Data Model
+    \begin{block}{Approximated correlations}
     \begin{equation}
-        D = T + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
+        \Cov{V}{T_{s,r}[V]\,} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
     \end{equation}
-    \begin{description}[]
-        \item [Error model]        $\displaystyle E\sim \Gauss{0}{\sigma_\varepsilon^2}$
-        \item [Prior travel times] $\displaystyle \mu_D = \Mean{T_{s,r}[\mu_V]}$
-        \item [Covariance matrix]  $\displaystyle \Sigma_{DD} = \int_C \int_{\acute C} \frac{K_V(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r + \sigma_\varepsilon^2$
-    \end{description}
+    \end{block}
 
-\column{.44\textwidth}
-    \vspace{-15mm}
+    \begin{block}{Approximated covariance}
+    \setlength\abovedisplayskip{0pt}
+    \begin{equation}
+        \Cov{T_{s,r}[V]}{T_{\acute s, \acute r}[V]\,} \approx  \int_C \int_{\acute C} \frac{K_V(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r
+    \end{equation}
+    \end{block}
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
     \input{fig_correlation.pgf}
 
 \end{columns}
 
 \end{frame}
 
+
 \begin{frame}
     \frametitle{Bayesian Posterior Distribution}
     \framesubtitle{Gaussian Process Regression}
 
 \begin{columns}
-\column{.55\textwidth}
-    \begin{alignat}{3}
-        \Mean{V|d} &= \mu_V &&+ \Cov{V}{D} \Var{D}^{-1} \big( d - \Mean{D} \big)
-        \\
-        \Var{V|d}  &= K_V   &&- \Cov{V}{D} \Var{D}^{-1} \Cov{V}{D}
-    \end{alignat}
-
-    Approximate Correlations
+\column{.55\textwidth}%
     \begin{equation}
-        \Cov{V}{D} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
+        D = T + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
     \end{equation}
+    \begin{description}[leftmargin=!, labelwidth=1cm]
+        \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2}$
+        \item [Prior travel times] $\mu_D = \Mean{T_{s,r}[\mu_V]\,}$
+        \item [Covariance matrix]  $\Sigma_{DD} = \Cov TT  + \Identity \sigma_\varepsilon^2$
+    \end{description}
 
-    The posterior is built successively;
-    will better account for non-linearity;
-    single evidence at a time;
-    correlations are obtained from predecessor;
+    \begin{block}{Conditional mean and covariance}
+    \setlength\abovedisplayskip{0pt}
+    \begin{alignat}{3}
+        \Mean{V|d} &= \mu_V &&+ \Cov VD \Var{D}^{-1} \big( d - \Mean{D} \big)
+        \\
+        \Var{V|d}  &= K_V   &&- \Cov VD \Var{D}^{-1} \Cov DV
+    \end{alignat}
+    \end{block}
+
+    \begin{alertblock}{Accommodate non-linearity}
+        \begin{itemize}
+            \item Single evidence at a time
+            \item Correlations and Variances from predecessor
+        \end{itemize}
+    \end{alertblock}
 
 
-\column{.44\textwidth}
-    \vspace{-15mm}
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
     \input{fig_discretization.pgf}
 
 \end{columns}
@@ -190,7 +216,7 @@
 \begin{frame}
     \frametitle{Successive Approach}
     \begin{center}
-    \movie[height=0.9\textheight, width=1.6\textheight]{\includegraphics[height=0.9\textheight, width=1.6\textheight]{animation}}{animation.mp4}
+    \movie[height=0.85\textheight, width=1.51\textheight, autostart]{\includegraphics[height=0.85\textheight, width=1.51\textheight]{animation_pst}}{animation.mp4}
     \end{center}
 \end{frame}
 
@@ -198,11 +224,13 @@
 \begin{frame}
     \frametitle{Outlook}
 
-    succesion order;
-    dispersion;
-    kernel accounting for individual frequency bands
-    real data;
-    estimation of hyper parameters;
+    \begin{description}[leftmargin=! ,labelwidth=1cm]
+        \item [Succesion order]
+        \item [Dispersion]
+            kernel accounting for individual frequency bands
+        \item [Real data]
+            estimation of hyper parameters
+    \end{description}
 
 \end{frame}
 

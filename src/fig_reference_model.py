@@ -15,8 +15,9 @@ from example import pairs, stations, c_act
 
 
 # Prepare map
-fig = plt.figure(figsize=(3,3))
 plt.rcParams.update(rcParams)
+fig = plt.figure(figsize=(2.5,3))
+fig.subplots_adjust(bottom=0.15, top=0.96, left=0.11, right=0.97)
 m = prepare_map()
 
 # Stations
@@ -28,12 +29,13 @@ grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon
 c = c_act(grid) # Actual velocity model
 
 # Plot velocity model
-m.imshow(c, cmap='seismic', vmin=3940, vmax=4060)
+ims = m.imshow(c, cmap='seismic', vmin=3940, vmax=4060)
 cbar = m.colorbar(location='bottom', pad="5%")
 ticks = np.linspace(3950, 4050, 5)
 cbar.set_ticks(ticks)
 cbar.set_label(r'$\frac ms$')
 cbar.solids.set_edgecolor("face")
+
 plt.savefig('../fig_reference_model.pgf')
 
 # Plot great circle for all combinations

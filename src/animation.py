@@ -19,7 +19,7 @@ cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).asty
 
 # Ratio 16:9
 fig = plt.figure(figsize=(8,4.5))
-fig.subplots_adjust(left=0.06, right=0.97, top=0.95, wspace=0.02)
+fig.subplots_adjust(left=0.06, right=0.97, top=0.95, wspace=0.02, bottom=0.05)
 ax_mu = fig.add_subplot(121)
 ax_sd = fig.add_subplot(122)
 
@@ -44,8 +44,7 @@ cbar.set_ticks([15, 20, 25, 30, 35, 40])
 m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
 
 # First frame; Necessary for LaTeX beamer
-plt.savefig('../animation.png', dpi=150)
-
+plt.savefig('../animation_pri.png', dpi=150)
 
 def animate(i):
     global mu_C, cov_CC
@@ -73,5 +72,9 @@ anim = animation.FuncAnimation(fig, animate, save_count=0, \
 # Save video
 anim.save('../animation.mp4', dpi=150)
 
-plt.close()
+# Last frame; Necessary for LaTeX beamer
+plt.savefig('../animation_pst.png', dpi=150)
+
+
+#plt.close()
 

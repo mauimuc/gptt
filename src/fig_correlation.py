@@ -14,12 +14,15 @@ from scipy.integrate import simps
 from plotting import rcParams, prepare_map
 from example import stations, pairs, ell, tau, points
 
-# Prepare map
-plt.figure(figsize=(3,3))
 plt.rcParams.update(rcParams)
+
+# Prepare map
+fig = plt.figure(figsize=(2.5,3))
+fig.subplots_adjust(bottom=0.15, top=0.96, left=0.11, right=0.97)
 m = prepare_map()
 
 sct = m.scatter(points['lon'], points['lat'], lw=0, marker='.', s=5, latlon=True, color='g')
+
 plt.savefig('../fig_discretization.pgf')
 sct.remove()
 
@@ -49,8 +52,8 @@ pcol = m.pcolormesh(lon, lat, KK, latlon=True, cmap='Purples', vmin=0, vmax=1, r
 
 cbar = m.colorbar(location='bottom', pad="5%")
 cbar.set_ticks([0, 0.25, 0.5, 0.75, 1])
+cbar.set_ticklabels([0, 0.25, 0.5, 0.75, 1])
 cbar.solids.set_edgecolor("face")
-
 plt.savefig('../fig_kernel.pgf')
 pcol.remove()
 
@@ -66,6 +69,7 @@ cor_TC = np.ma.masked_array(cor_TC, cor_TC<0.01)
 # Plot correlation kernel; pcolor needs points in between
 lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
 m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='Purples', vmin=0, vmax=1, rasterized=True, zorder=0)
+
 
 plt.savefig('../fig_correlation.pgf')
 
