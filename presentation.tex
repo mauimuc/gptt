@@ -38,8 +38,8 @@
     {\maketitle}
 
 \begin{frame}
-    \frametitle{Outline -- Where are we driving at?}
-    \framesubtitle{Surface Wave Tomography -- Having an application with ambient noise records in mind }
+    \frametitle{Surface Wave Tomography}
+    \framesubtitle{with ambient noise records}
 
 \begin{columns}
 \column{.55\textwidth}
@@ -69,7 +69,7 @@
 
 \begin{frame}
     \frametitle{Travel Time Observations}
-    \framesubtitle{Surface Wave Tomography}
+    \framesubtitle{a functional w.r.t.~an underlying velocity model}
 
 \begin{columns}
 \column{.55\textwidth}%
@@ -77,13 +77,13 @@
         d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
     \end{equation}
     \begin{description}[leftmargin=! ,labelwidth=1cm]
-        \item [Actual observation]       $d$
+        \item [Measured value]           $d$
         \item [Source location]          $s$
         \item [Receiver position]        $r$
-        \item [Observational functional] $T_{s,r}[\cdot]$
+        \item [Observational functional] $\mathrm T_{s,r}[\cdot]$
         \item [Velocity model]           $v$
-        \item [Ray path]                 $C$ great circle
-        \item [Measurement error]        $\varepsilon$ white noise
+        \item [Ray path]                 $C$
+        \item [Measurement error]        $\varepsilon$
     \end{description}
 
     \begin{alertblock}{It is the velocity model what we are after}
@@ -142,7 +142,7 @@
 \begin{columns}
 \column{.55\textwidth}%
     \begin{equation}
-        T_{s,r}[v] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
+        \mathrm T_{s,r}[v] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
     \end{equation}
     \begin{description}[leftmargin=!, labelwidth=1cm]
         \item [Taylor expansion] 1\textsuperscript{st} order
@@ -152,14 +152,14 @@
 
     \begin{block}{Approximated correlations}
     \begin{equation}
-        \Cov{V}{T_{s,r}[V]\,} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
+        \Cov{V}{\mathrm T_{s,r}[V]\,} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
     \end{equation}
     \end{block}
 
     \begin{block}{Approximated covariance}
     \setlength\abovedisplayskip{0pt}
     \begin{equation}
-        \Cov{T_{s,r}[V]}{T_{\acute s, \acute r}[V]\,} \approx  \int_C \int_{\acute C} \frac{K_V(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r
+        \Cov{\mathrm T_{s,r}[V]}{\mathrm T_{\acute s, \acute r}[V]\,} \approx  \int_C \int_{\acute C} \frac{K_V(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r
     \end{equation}
     \end{block}
 
@@ -182,7 +182,7 @@
         D = T + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
     \end{equation}
     \begin{description}[leftmargin=!, labelwidth=1cm]
-        \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2}$
+        \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2 = \SFWepsilon^2 }$
         \item [Prior travel times] $\mu_D = \Mean{T_{s,r}[\mu_V]\,}$
         \item [Covariance matrix]  $\Sigma_{DD} = \Cov TT  + \Identity \sigma_\varepsilon^2$
     \end{description}
@@ -207,6 +207,12 @@
 \column[T]{.44\textwidth}
     \vspace{-10mm}
     \input{fig_discretization.pgf}
+    \small
+    \begin{align}
+        \delta\sphericalangle &\approx \SFWdeltaangle\,^\circ &
+        & \leadsto &
+        N &= \SFWnpts
+    \end{align}
 
 \end{columns}
 
