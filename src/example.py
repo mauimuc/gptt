@@ -28,7 +28,7 @@ def mu_C_pri(crd):
 
 
 # Read station coordinates
-stations = read_station_file('../dat/stations.dat')[:12]
+stations = read_station_file('../dat/stations.dat')[::2]
 
 # Indices for all combinations of stations with duplicates dropped
 idx, idy = np.tril_indices(stations.size, -1)
