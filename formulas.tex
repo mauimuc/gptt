@@ -39,12 +39,19 @@ Details may be found in my PhD thesis.
 The idea in my mind is to use ambient noise records for surface wave tomography.
 The average slowness amongst station pairs are obtained from cross correlations.
 To avoid the difficulty of dispersion, only a narrow frequency band shall be considered.
+Slownesses are picked from bandpass filtered cross correlograms.
 Diffraction is neglected to simplify things even further.
 Then, the ray path between stations is approximated by a great circle segment.
 Travel times amongst stations are given by distance times the average slowness.
-\worries{Actually, retrieving travel times that way is going round in circles.
-It is the ray path -- i.e.~the distance -- depending upon the model which in turn is unknown!
-Although the average slowness is a decent observable, I stay with travel times since this is what I begun working with.}
+\worries{Actually, considering travel times is going round in circles.
+In general, the ray path -- i.e.~the distance -- depends on the velocity and is unknown!
+There is no need for travel times.
+The average slowness
+\begin{equation}
+    \bar p = \left(\int_C |\acute r(t)| \mathrm d t \right)^{-1} \int_C \frac 1 {v(r(r))} |\acute r(t)| \mathrm d t
+\end{equation}
+is a decent observable.
+Anyway, I stay with travel times since this is what I begun working with.}
 
 \section{Setting}
 
