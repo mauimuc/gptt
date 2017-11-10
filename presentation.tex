@@ -38,11 +38,30 @@
     {\maketitle}
 
 \begin{frame}
-    \frametitle{Surface Wave Tomography}
-    \framesubtitle{with ambient noise records}
+    \frametitle{Overview}
+    \framesubtitle{Where are we driving at -- What I am going to present}
 
 \begin{columns}
 \column{.55\textwidth}
+
+    \begin{block}{Surface Wave Tomography}
+        \begin{itemize}
+            \item Correlation-based Bayesian inversion
+            \item with ambient noise records
+            \item Explicit correlation structure
+        \end{itemize}
+        \hfill {\Large $\leadsto$} Realistic, location dependent model uncertainties ~
+    \end{block}
+
+    \begin{exampleblock}{First steps}
+        \begin{itemize}
+            \item A synthetic test for the static field
+            \item Explicit spatial correlation structure
+            \item Proxy correlations for declination, inclination and intensity
+        \end{itemize}
+        \hfill {\Large $\leadsto$} A\,posteriori distribution for the static field ~
+    \end{exampleblock}
+
 
     Simplifications
     \begin{itemize}
@@ -228,15 +247,30 @@
 
 
 \begin{frame}
-    \frametitle{Outlook}
+    \frametitle{Conclusions}
 
-    \begin{description}[leftmargin=! ,labelwidth=1cm]
-        \item [Succesion order]
-        \item [Dispersion]
+    Preliminary results
+    \begin{itemize}
+        \item Accounts for irregular data distributions
+        \item Linearization performs well
+        \item Realistic assessment of spatial uncertainties
+        \item Computationally simple
+        \item All calculus in the function space view \\
+              No basis functions, no truncations at a certain degree
+        \item Memory intens
+    \end{itemize}
+    \medskip
+
+    Outlook
+    \begin{itemize}
+        \item Compare with models providing uncertainties
+        \item Use of better suited correlation structures
+        \item Succesion order
+        \item Dispersion;
             kernel accounting for individual frequency bands
-        \item [Real data]
+        \item Real data;
             estimation of hyper parameters
-    \end{description}
+    \end{itemize}
 
 \end{frame}
 
