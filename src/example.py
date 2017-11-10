@@ -8,7 +8,7 @@ __license__   = "GPLv3"
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
 import numpy as np
-from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair
+from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair, cov_TT
 from scipy.integrate import simps
 from file_IO import read_station_file
 
@@ -26,29 +26,9 @@ def c_act(crd):
 def mu_C_pri(crd):
     return np.full_like(crd, 4000, dtype=np.float)
 
-def misfit():
-    # XXX Does no longer work
-    # TODO Adopt to OO approach
-    cov_DD = np.zeros( (190,190) )
-    mu_D = np.zeros( 190 )
-    for i in range(index.size):
-        slc_i = slice(index[i], index[i] + npts[i], 1) # Slice
-        t_i = ts[slc_i] # Discretization
-        mu_D[i] = simps(r_E/mu_C[slc_i], t_i) # travel time
-        cor = -simps(cov_CC[:-N**2,slc_i]*r_E/mu_C[slc_i]**2, t_i, axis=-1)
-        for j in range(i, index.size):
-            slc_j = slice(index[j], index[j] + npts[j], 1) # Slice
-            t_j = ts[slc_j] # Discretization
-            cov = -simps(cor[slc_j]*r_E/mu_C[slc_j]**2, t_j, axis=-1)
-            cov_DD[i,j] = cov
-            if i!=j:
-                cov_DD[j,i] = cov
-    L = np.linalg.cholesky(cov_DD)
-    return (np.linalg.solve(L, D - mu_D)**2).sum()
-
 
 # Read station coordinates
-stations = read_station_file('../dat/stations.dat')[::2]
+stations = read_station_file('../dat/stations.dat')[:12]
 
 # Indices for all combinations of stations with duplicates dropped
 idx, idy = np.tril_indices(stations.size, -1)
@@ -115,7 +95,7 @@ if __name__ == '__main__':
         # Update posterior co-variance
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
         # Screen output
-        print 'Combination %5s -- %-5s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
+        print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
 
     var_C = np.sqrt(cov_CC.diagonal())
 
@@ -130,7 +110,6 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWepsilon{%.2f}' % epsilon + '\n')
         fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri(1)  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
-
 
 
     plt.rcParams.update(rcParams)
