@@ -8,9 +8,8 @@ __license__   = "GPLv3"
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
 import numpy as np
-from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair, cov_TT
+from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair, read_station_file
 from scipy.integrate import simps
-from file_IO import read_station_file
 
 def c_act(crd):
     ''' Toy model for the surface wave velocity to be recovered. '''
@@ -73,14 +72,24 @@ tau = 40  # A priori uncertainty; standard deviation
 
 if __name__ == '__main__':
     from gptt import gauss_kernel
-    from matplotlib import pyplot as plt
-    from plotting import prepare_map, rcParams
+    import h5py
 
     # A priori assumptions
     mu_C = mu_C_pri(points) # The velocity models a priori mean
     # A priori covariance
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
+    fh = h5py.File('../dat/example.hdf5', 'w')
+    dst = fh.create_dataset('stations', stations.shape, dtype=stations.dtype)
+    dst[:] = stations
+    pst = fh.create_dataset('points', points.shape, dtype=dt_latlon)
+    pst[:] = points
+
+    must = fh.create_dataset('mean', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+    covst = fh.create_dataset('cov', (len(pairs) + 1, ) + cov_CC.shape, dtype=np.float32)
+
+    must[0,:] = mu_C
+    covst[0,:,:] = cov_CC
     # Successively consider evidence
     for i in range(len(pairs)):
         pair = pairs[i]
@@ -97,7 +106,10 @@ if __name__ == '__main__':
         # Screen output
         print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
 
-    var_C = np.sqrt(cov_CC.diagonal())
+        must[i+1,:] = mu_C
+        covst[i+1,:,:] = cov_CC
+
+    fh.close()
 
     # Write parameters for being used in the LaTeX document
     with open('../def_example.tex', 'w') as fh:
@@ -110,29 +122,5 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWepsilon{%.2f}' % epsilon + '\n')
         fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri(1)  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
-
-
-    plt.rcParams.update(rcParams)
-    fig = plt.figure(figsize=(6.5,4))
-    fig.subplots_adjust(wspace=0.02)
-
-    ax_mu = fig.add_subplot(121)
-    m = prepare_map(ax_mu)
-    x, y = m(points['lon'], points['lat'])
-    pcol = ax_mu.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
-    cbar = m.colorbar(pcol, location='bottom', pad="5%")
-    cbar.set_ticks([3950, 3975, 4000, 4025, 4050])
-    cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
-
-    ax_sd = fig.add_subplot(122)
-    m = prepare_map(ax_sd, pls=[0,0,0,0])
-    pcol = ax_sd.tripcolor(x, y, var_C, cmap='Reds', vmin=20, rasterized=True)
-    cbar = m.colorbar(pcol, location='bottom', pad="5%")
-    cbar.set_ticks([20, 25, 30, 35])
-    cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
-
-    plt.savefig('../fig_example.pgf', bbox_inches='tight')
 
 

@@ -3,8 +3,11 @@
 formulas.pdf: formulas.tex fig_path_coverage.pgf fig_correlation.pgf fig_example.pgf
 	pdflatex formulas
 
-fig_example.pgf def_example.pgf: ./src/example.py ./src/gptt.py
+def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py
 	cd src; python example.py
+
+fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
+	cd src; python fig_posterior.py
 
 fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/example.py
 	cd src; python fig_path_coverage.py

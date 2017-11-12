@@ -16,6 +16,12 @@ r_E = 6371000.
 dt_latlon = np.dtype( [('lat', np.float), ('lon', np.float)] )
 
 
+def read_station_file(fname):
+    ''' Reads the station file and returns a structured array '''
+    my_dt = [ ('stnm', 'S5'), ('lat', np.float), ('lon', np.float), ('elv', np.float) ]
+    return np.genfromtxt(fname, dtype=my_dt)
+
+
 def great_circle_distance(crd1, crd2):
     ''' pass coordinates crd1 und crd1 as a structured array '''
     cos_sigma = cos_central_angle(crd1, crd2)
