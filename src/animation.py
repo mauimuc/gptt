@@ -8,14 +8,17 @@ __license__   = "GPLv3"
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
-from example import pairs, mu_C_pri, points, stations, ell, tau
-from gptt import gauss_kernel
 from plotting import prepare_map
+import h5py
 
-# The velocity models a priori mean
-mu_C = mu_C_pri(points).astype('float32')
-# A priori covariance
-cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
+
+fh = h5py.File('../dat/example.hdf5', 'r')
+
+points = fh['points']
+stations = fh['stations']
+mu_C = fh['mean']
+cov_CC = fh['cov']
+
 
 # Ratio 16:9
 fig = plt.figure(figsize=(8,4.5))
@@ -26,7 +29,7 @@ ax_sd = fig.add_subplot(122)
 # Subplot on the left
 m = prepare_map(ax_mu)
 x, y = m(points['lon'], points['lat'])
-tpc_mu = ax_mu.tripcolor(x, y, mu_C, \
+tpc_mu = ax_mu.tripcolor(x, y, mu_C[0,:], \
     vmin=3940, vmax=4060, cmap='seismic', shading='gouraud')
 cbar = m.colorbar(tpc_mu, location='bottom')
 ticks = np.linspace(3950, 4050, 3)
@@ -36,7 +39,7 @@ m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0)
 
 # Subplot right
 m = prepare_map(ax_sd, pls=[0,0,0,0])
-tpc_sd = ax_sd.tripcolor(x, y, np.sqrt(cov_CC.diagonal()), \
+tpc_sd = ax_sd.tripcolor(x, y, np.sqrt(cov_CC[0,:,:].diagonal()), \
     vmin=15, vmax=40, cmap='Reds', shading='gouraud')
 cbar = m.colorbar(tpc_sd, location='bottom')
 cbar.set_ticks([15, 20, 25, 30, 35, 40])
@@ -49,26 +52,15 @@ plt.savefig('../animation.png', dpi=150)
 
 def animate(i):
     global mu_C, cov_CC
-    pair = pairs[i]
-    # Prior mean
-    mu_T = pair.T(mu_C)
-    # Correlations amongst model and travel time
-    cor_CT = pair.cor_CT(mean=mu_C, cov=cov_CC)
-    # Prior variance
-    var_DD = pair.var_DD(mean=mu_C, cov=cov_CC)
-    # Update posterior mean
-    mu_C += cor_CT/var_DD*(pair.d - mu_T)
-    # Update posterior co-variance
-    cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
-    # Screen output
-    print 'Combination %5s -- %-5s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
-    tpc_mu.set_array(mu_C)
-    tpc_sd.set_array(np.sqrt(cov_CC.diagonal()))
+
+    tpc_mu.set_array(mu_C[i,:])
+    tpc_sd.set_array(np.sqrt(cov_CC[i,:,:].diagonal()))
+
     return tpc_mu, tpc_sd
 
 
 anim = animation.FuncAnimation(fig, animate, save_count=0, \
-                               frames=len(pairs), interval=100, blit=False)
+                               frames=mu_C.shape[0], interval=100, blit=False)
 
 # Save video
 anim.save('../animation.mp4', dpi=150)
