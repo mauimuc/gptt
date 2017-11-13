@@ -67,11 +67,13 @@ for i, j, n in np.nditer( (idx, idy, npts) ):
     # Increment index
     index += n
 
+d = [pair.d for pair in pairs]
+
 ell = 16000 # Characteristic length
 tau = 40  # A priori uncertainty; standard deviation
 
 if __name__ == '__main__':
-    from gptt import gauss_kernel
+    from gptt import gauss_kernel, f_mu_T, f_cov_TT, misfit
     import h5py
 
     # A priori assumptions
@@ -82,15 +84,21 @@ if __name__ == '__main__':
     fh = h5py.File('../dat/example.hdf5', 'w')
     fh.create_dataset('stations', data=stations)
     fh.create_dataset('points', data=points)
-    fh.create_dataset('d', data=[pair.d for pair in pairs])
+    fh.create_dataset('d', data=d)
 
     fh.create_dataset('cov_CC_pri', data=cov_CC)
 
     dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
     dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+    dset_misfit = fh.create_dataset('misfit', (len(pairs) + 1, ), dtype=np.float32)
 
     dset_mu[0,:] = mu_C
     dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
+
+    mu_T = f_mu_T(pairs, mu_C)
+    cov_TT = f_cov_TT(pairs, mu_C, cov_CC)
+    dset_misfit[0] = misfit(d, mu_T, cov_TT)
+
     # Successively consider evidence
     for i in range(len(pairs)):
         pair = pairs[i]
@@ -109,6 +117,9 @@ if __name__ == '__main__':
 
         dset_mu[i+1,:] = mu_C
         dset_sd[i+1,:] = np.sqrt(cov_CC.diagonal())
+        mu_T = f_mu_T(pairs, mu_C)
+        cov_TT = f_cov_TT(pairs, mu_C, cov_CC)
+        dset_misfit[i+1] = misfit(d, mu_T, cov_TT)
 
     fh.create_dataset('cov_CC_pst', data=cov_CC)
 

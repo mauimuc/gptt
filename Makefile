@@ -15,7 +15,10 @@ fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
 fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/example.hdf5
 	cd src; python fig_correlation_pst.py
 
-presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel.pgf fig_correlation.pgf fig_discretization.pgf animation.mp4 animation_pst.png fig_correlation_pst.pgf
+fig_misfit.pgf: ./src/fig_misfit.py ./dat/example.hdf5
+	cd src; python fig_misfit.py
+
+presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel.pgf fig_correlation.pgf fig_discretization.pgf animation.mp4 animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf fig_misfit.pgf
 	pdflatex presentation
 
 animation.mp4 animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py
