@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := formulas.pdf
 
-formulas.pdf: formulas.tex fig_path_coverage.pgf fig_correlation.pgf fig_example.pgf
+formulas.pdf: formulas.tex fig_path_coverage.pgf fig_correlation.pgf fig_example.pgf fig_reference_model.pgf
 	pdflatex formulas
 
 def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py
