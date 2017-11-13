@@ -8,9 +8,8 @@ __license__   = "GPLv3"
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
 import numpy as np
-from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair
+from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair, read_station_file
 from scipy.integrate import simps
-from file_IO import read_station_file
 
 def c_act(crd):
     ''' Toy model for the surface wave velocity to be recovered. '''
@@ -25,26 +24,6 @@ def c_act(crd):
 
 def mu_C_pri(crd):
     return np.full_like(crd, 4000, dtype=np.float)
-
-def misfit():
-    # XXX Does no longer work
-    # TODO Adopt to OO approach
-    cov_DD = np.zeros( (190,190) )
-    mu_D = np.zeros( 190 )
-    for i in range(index.size):
-        slc_i = slice(index[i], index[i] + npts[i], 1) # Slice
-        t_i = ts[slc_i] # Discretization
-        mu_D[i] = simps(r_E/mu_C[slc_i], t_i) # travel time
-        cor = -simps(cov_CC[:-N**2,slc_i]*r_E/mu_C[slc_i]**2, t_i, axis=-1)
-        for j in range(i, index.size):
-            slc_j = slice(index[j], index[j] + npts[j], 1) # Slice
-            t_j = ts[slc_j] # Discretization
-            cov = -simps(cor[slc_j]*r_E/mu_C[slc_j]**2, t_j, axis=-1)
-            cov_DD[i,j] = cov
-            if i!=j:
-                cov_DD[j,i] = cov
-    L = np.linalg.cholesky(cov_DD)
-    return (np.linalg.solve(L, D - mu_D)**2).sum()
 
 
 # Read station coordinates
@@ -93,14 +72,24 @@ tau = 40  # A priori uncertainty; standard deviation
 
 if __name__ == '__main__':
     from gptt import gauss_kernel
-    from matplotlib import pyplot as plt
-    from plotting import prepare_map, rcParams
+    import h5py
 
     # A priori assumptions
     mu_C = mu_C_pri(points) # The velocity models a priori mean
     # A priori covariance
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
+    fh = h5py.File('../dat/example.hdf5', 'w')
+    dst = fh.create_dataset('stations', stations.shape, dtype=stations.dtype)
+    dst[:] = stations
+    pst = fh.create_dataset('points', points.shape, dtype=dt_latlon)
+    pst[:] = points
+
+    must = fh.create_dataset('mean', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+    covst = fh.create_dataset('cov', (len(pairs) + 1, ) + cov_CC.shape, dtype=np.float32)
+
+    must[0,:] = mu_C
+    covst[0,:,:] = cov_CC
     # Successively consider evidence
     for i in range(len(pairs)):
         pair = pairs[i]
@@ -115,9 +104,12 @@ if __name__ == '__main__':
         # Update posterior co-variance
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
         # Screen output
-        print 'Combination %5s -- %-5s %3i/%3i' % ( pair.st1['stnm'], pair.st2['stnm'], i, len(pairs) )
+        print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
 
-    var_C = np.sqrt(cov_CC.diagonal())
+        must[i+1,:] = mu_C
+        covst[i+1,:,:] = cov_CC
+
+    fh.close()
 
     # Write parameters for being used in the LaTeX document
     with open('../def_example.tex', 'w') as fh:
@@ -130,30 +122,5 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWepsilon{%.2f}' % epsilon + '\n')
         fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri(1)  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
-
-
-
-    plt.rcParams.update(rcParams)
-    fig = plt.figure(figsize=(6.5,4))
-    fig.subplots_adjust(wspace=0.02)
-
-    ax_mu = fig.add_subplot(121)
-    m = prepare_map(ax_mu)
-    x, y = m(points['lon'], points['lat'])
-    pcol = ax_mu.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
-    cbar = m.colorbar(pcol, location='bottom', pad="5%")
-    cbar.set_ticks([3950, 3975, 4000, 4025, 4050])
-    cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
-
-    ax_sd = fig.add_subplot(122)
-    m = prepare_map(ax_sd, pls=[0,0,0,0])
-    pcol = ax_sd.tripcolor(x, y, var_C, cmap='Reds', vmin=20, rasterized=True)
-    cbar = m.colorbar(pcol, location='bottom', pad="5%")
-    cbar.set_ticks([20, 25, 30, 35])
-    cbar.solids.set_edgecolor("face")
-    m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
-
-    plt.savefig('../fig_example.pgf', bbox_inches='tight')
 
 

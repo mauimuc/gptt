@@ -6,7 +6,7 @@ __copyright__ = "Copyright (C) 2017 Stefan Mauerberger"
 __license__   = "GPLv3"
 
 from mpl_toolkits.basemap import Basemap
-from file_IO import read_station_file
+from gptt import read_station_file
 
 # Options
 rcParams = {'text.usetex' : True,

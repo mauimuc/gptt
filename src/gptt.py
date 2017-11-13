@@ -16,6 +16,12 @@ r_E = 6371000.
 dt_latlon = np.dtype( [('lat', np.float), ('lon', np.float)] )
 
 
+def read_station_file(fname):
+    ''' Reads the station file and returns a structured array '''
+    my_dt = [ ('stnm', 'S5'), ('lat', np.float), ('lon', np.float), ('elv', np.float) ]
+    return np.genfromtxt(fname, dtype=my_dt)
+
+
 def great_circle_distance(crd1, crd2):
     ''' pass coordinates crd1 und crd1 as a structured array '''
     cos_sigma = cos_central_angle(crd1, crd2)
@@ -44,6 +50,9 @@ class StationPair(object):
         self.d = None # Observed value
         self.error = error # Standard deviation
         self.indices = indices # Discretization
+
+    def __str__(self):
+        return '%5s -- %-5s' % (self.st1['stnm'], self.st2['stnm'])
 
     @property
     def npts(self):
@@ -108,4 +117,32 @@ class StationPair(object):
             model and travel time '''
         return -simps(r_E*cov[:,self.indices]/mean[self.indices]**2, \
                       dx=self.spacing, axis=-1)
+
+
+def mu_T(pairs, mean):
+    ''' Calculate mean travel time '''
+    N = len(pairs)
+    res = np.empty(N)
+    for i in range(N):
+        res[i] = simps(r_E/mean[pairs[i].indices], dx=pairs[i].spacing)
+    return res
+
+def cov_TT(pairs, mean, cov):
+    N = len(pairs)
+    res = np.empty((N,N))
+    for i in range(N):
+        ds_i = pairs[i].spacing
+        idx_i = pairs[i].indices
+        cor = -simps(cov[:,idx_i]*r_E/mean[idx_i]**2, dx=ds_i, axis=-1)
+        for j in range(i, N):
+            ds_j = pairs[j].spacing
+            idx_j = pairs[j].indices
+            res[i,j] = -simps(cor[idx_j]*r_E/mean[idx_j]**2, dx=ds_j)
+            if i!=j:
+                res[j,i] = res[i,j]
+    return res
+
+def misfit(d, mean, cov):
+    L = np.linalg.cholesky(cov)
+    return (np.linalg.solve(L, d - mean)**2).sum()
 
