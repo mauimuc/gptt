@@ -24,25 +24,6 @@ m = prepare_map(ax=ax_map)
 
 # Plot discretization
 m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
-sct = m.scatter(points['lon'], points['lat'], lw=0, marker='.', s=4, latlon=True, color='g', rasterized=True)
-
-plt.savefig('../fig_discretization.pgf')
-# only remove discretization from figure
-sct.remove()
-
-# Plot ray coverage
-# Plot great circle for all combinations
-gcs = list()
-for pair in pairs:
-    p, = m.drawgreatcircle(pair.st1['lon'], pair.st1['lat'], \
-                        pair.st2['lon'], pair.st2['lat'], \
-                        linewidth=0.5, color='g', alpha=0.5)
-    gcs.append(p)
-
-plt.savefig('../fig_path_coverage.pgf')
-# remove
-for p in gcs:
-    p.remove()
 
 
 # Add axes for the colorbar
@@ -50,25 +31,6 @@ bbox = ax_map.get_position()
 ax_cbr = fig.add_axes( (bbox.x0, bbox.y0 - 0.06, bbox.width, 0.04) )
 
 
-# Plot reference velocity model
-
-# Make a lat, lon grid with extent of the map
-N = 60j
-grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
-c = c_act(grid) # Actual velocity model
-
-ims = m.imshow(c, cmap='seismic', vmin=3940, vmax=4060)
-cbar = plt.colorbar(ims, cax=ax_cbr, orientation='horizontal')
-ticks = np.linspace(3950, 4050, 5)
-cbar.set_ticks(ticks)
-cbar.set_label(r'$^m/_s$')
-cbar.solids.set_edgecolor("face")
-
-plt.savefig('../fig_reference_model.pgf')
-#remove
-ims.remove()
-for a in ax_cbr.artists:
-    a.remove()
 
 #### Plot covariance ####
 

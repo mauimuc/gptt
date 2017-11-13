@@ -6,7 +6,7 @@ formulas.pdf: formulas.tex fig_path_coverage.pgf fig_correlation.pgf fig_example
 def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py
 	cd src; python example.py
 
-fig_path_coverage.pgf fig_kernel.pgf fig_correlation.pgf: ./src/figures.py ./src/example.py ./src/plotting.py
+fig_kernel.pgf fig_correlation.pgf: ./src/figures.py ./src/example.py ./src/plotting.py
 	cd src; python figures.py
 
 fig_reference_model.pgf: ./src/fig_reference_model.py ./src/example.py ./src/plotting.py
@@ -14,6 +14,9 @@ fig_reference_model.pgf: ./src/fig_reference_model.py ./src/example.py ./src/plo
 
 fig_discretization.pgf: ./src/fig_discretization.py ./src/example.py ./src/plotting.py
 	cd src; python fig_discretization.py
+
+fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/example.py ./src/plotting.py
+	cd src; python fig_path_coverage.py
 
 fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
 	cd src; python fig_posterior.py
