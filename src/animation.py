@@ -54,6 +54,7 @@ def animate(i):
 
     tpc_mu.set_array(mu_C[i,:])
     tpc_sd.set_array(np.sqrt(cov_CC[i,:,:].diagonal()))
+    print('Frame %i of %i' % (i+1, mu_C.shape[0]))
 
     return tpc_mu, tpc_sd
 
