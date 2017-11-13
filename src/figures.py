@@ -24,7 +24,7 @@ m = prepare_map(ax=ax_map)
 
 # Plot discretization
 m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
-sct = m.scatter(points['lon'], points['lat'], lw=0, marker='.', s=5, latlon=True, color='g')
+sct = m.scatter(points['lon'], points['lat'], lw=0, marker='.', s=4, latlon=True, color='g', rasterized=True)
 
 plt.savefig('../fig_discretization.pgf')
 # only remove discretization from figure
