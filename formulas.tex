@@ -24,43 +24,37 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Adopting Gaussian process regression to travel time tomography.
-    As a possible future application I am toying around with surface wave tomography.
+    As a proof of concept, a synthetic test in surface wave tomography is presented.
+    The application in mind is the prediction of group velocities associated with a narrow frequency band.
+    Pseudo travel times are generated from the reference model and are corrupted by normal noise.
+    Correlations are derived from the squared exponential kernel serving as covariance for the velocity model.
+    In a potential future application ambient noise records may serve as data basis.
     The following is just a brief description of the experiment and a summary of formulas I am using.
 \end{abstract}
 
 \section{Introduction}
 \input{def_example}
 
-Use Gaussian process regression together with an underlying correlation structure for surface wave tomography.
+This is going to be a synthetic test.
+The method of Gaussian process regression is applied together with an underlying correlation structure for surface wave tomography.
 For the time being I skip on a description of the modeling method.
 Details may be found in my PhD thesis.
 
 The idea in my mind is to use ambient noise records for surface wave tomography.
 The average slowness amongst station pairs are obtained from cross correlations.
 To avoid the difficulty of dispersion, only a narrow frequency band shall be considered.
-Slownesses are picked from bandpass filtered cross correlograms.
+Slownesses are picked from bandpass filtered correlograms.
 Diffraction is neglected to simplify things even further.
 Then, the ray path between stations is approximated by a great circle segment.
 Travel times amongst stations are given by distance times the average slowness.
-\worries{Actually, considering travel times is going round in circles.
-In general, the ray path -- i.e.~the distance -- depends on the velocity and is unknown!
-There is no need for travel times.
-The average slowness
-\begin{equation}
-    \bar p = \left(\int_C |\acute r(t)| \mathrm d t \right)^{-1} \int_C \frac 1 {v(r(r))} |\acute r(t)| \mathrm d t
-\end{equation}
-is a decent observable.
-Anyway, I stay with travel times since this is what I begun working with.}
 
 \section{Setting}
 
-This is going to be a synthetic test.
-The reference model $\tilde v$ is of constant velocity $4\,\sfrac{km}s$ perturbed by two blobs, just large scale anomalies.
-At their maximum those blobs are showing a deviation of about $\pm 1\%$ and a characteristic length of $50\,km$.
+The reference model $\tilde v$ is of constant velocity $4\,\sfrac{km}s$ perturbed by two blobs; just large scale anomalies.
+At their maximum those blobs are showing a deviation of about $\pm 1\%$ and a characteristic length of $\approx\!50\,km$.
 To proceed with a partly realistic setting the station geometry is borrowed from a subset of the ScanArray (DOI: 10.14470/6T569239).
 Due to computational limitations I am just considering $\SFWnst$ stations.
-Figure~\ref{fig:path_coverage} depicts the reference velocity model with the path coverage atop.
+Figure~\ref{fig:path_coverage} depicts the reference velocity model and the path coverage.
 
 \begin{figure}
     \centering
@@ -69,15 +63,15 @@ Figure~\ref{fig:path_coverage} depicts the reference velocity model with the pat
     \label{fig:path_coverage}
 \end{figure}
 
-Pseudo observations $d$ are generated from the reference velocity model considering all pairs of stations.
-Synthetic travel times are obtained by integrating the slowness along the great circle segment.
-To simulate measurement noise the set of pseudo observations is corrupted by normal noise of standard deviation $\sigma_\varepsilon = \SFWepsilon$\,.
+Pseudo observations are denoted by $d$ and are generated from the reference velocity model considering all pairs of stations.
+Integrating the slowness along the great circle segment yields synthetic travel times.
+To simulate measurement noise the set of synthetic travel times is corrupted by normal noise of standard deviation $\sigma_\varepsilon = \SFWepsilon$\,.
 In total that are $\SFWnobs$ observations.
 
 
 \section{Line Integral along a Great Circle Segment}
 
-In the oversimplified setting the ray path is given by the shortest distance between two points $a$, $b$ at the Earth's surface.
+In our oversimplified setting the ray path is given by the shortest distance between two points $a$, $b$ at the Earth's surface.
 The central angle is given by
 \begin{equation}
     \cos \sphericalangle_a^b %= \frac{a \cdot b}{|a||b|}
@@ -90,20 +84,19 @@ With respect to a Cartesian coordinate frame such a parametrization is of the fo
     r(t) = a \cos t + w \sin t
 \end{equation}
 with $t \in [0:2\pi]$.
-$w$ is determined by
+The point $w$ is determined by
 \begin{align}
     b &= r(t = \sphericalangle_a^b) &
     &\leadsto &
     w &= \frac{b - a \cos \sphericalangle_a^b}{\sin \sphericalangle_a^b}
-    \; .
 \end{align}
-The segment between $a$ and $b$ is given by $C= \{r(t) \mid t \in [0, \sphericalangle_a^b]\}$.
-
+and the segment between $a$ and $b$ is given by $C= \{r(t) \mid t \in [0, \sphericalangle_a^b]\}$.
+%
 Now we can calculate travel times by carrying out the line integral along the great circle segment
 \begin{equation}
     \mathrm T_{a,b}[v]
-    = \int_C \frac1{v(r)} \mathrm d r
-    = \int_0^{\sphericalangle_a^b} \frac 1{v(r(t))} |\acute r(t)| \mathrm d t
+    = \int_C \frac1{v(r)} \, \mathrm d r
+    = \int_0^{\sphericalangle_a^b} \frac 1{v(r(t))} |\acute r(t)| \, \mathrm d t
 \end{equation}
 where $v$ refers to a velocity model.
 The length of a line element is given by
@@ -118,6 +111,7 @@ where $r_E$ refers to the Earth's radius.
 As we do not consider diffraction an adoptive discretization is not needed.
 To integrate travel times Simpson's rule is used, a fixed samples quadrature scheme.
 Therefore, it is necessary to discretize the great circle segment for all station pairs.
+I am using a highly irregular discretization which is handy particularly for numeric integration.
 All the segments are sampled at almost the same spacing.
 The increment is chosen as
 \begin{equation}
@@ -125,8 +119,7 @@ The increment is chosen as
     \approx \SFWdeltaangle \,{}^\circ
 \end{equation}
 i.e.~half the shortest inter-station distance.
-Although that discretization is highly irregular it is handy for numeric integration.
-The resulting grid totaling to a $\SFWnpts$ points is depicted in Figure~\ref{fig:correlation}.
+The resulting grid -- totaling to a $\SFWnpts$ points -- is depicted in Figure~\ref{fig:correlation}.
 
 
 \section{Correlation Kernel}
@@ -226,6 +219,16 @@ The small scale patches are suggesting to increase the characteristic length.
 \begin{itemize}
     \item It were interesting to see how the misfit successively evolves
     \item Estimate parameters
+    \item In that context the average slownesses obtained from cross correlations were the better observable.
+        Considering travel times is going round in circles.
+        The ray path -- i.e.~the distance -- in general depends on the velocity and is unknown.
+        There actually is no need for travel times.
+        The average slowness
+        \begin{equation}
+            \bar p = \left(\int_C |\acute r(t)| \mathrm d t \right)^{-1} \int_C \frac 1 {v(r(r))} |\acute r(t)| \mathrm d t
+        \end{equation}
+        is a decent observable.
+
 \end{itemize}
 
 
