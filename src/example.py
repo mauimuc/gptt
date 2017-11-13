@@ -84,8 +84,8 @@ if __name__ == '__main__':
     dst[:] = stations
     pst = fh.create_dataset('points', points.shape, dtype=dt_latlon)
     pst[:] = points
-    dst = fh.create_dataset('d', len(pairs) )
-    dst[:] = np.array( [pair.d for pair in pairs] )
+    dpa = fh.create_dataset('d', (len(pairs), ), dtype=float)
+    dpa[:] = np.array( [pair.d for pair in pairs] )
 
     must = fh.create_dataset('mean', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
     covst = fh.create_dataset('cov', (len(pairs) + 1, ) + cov_CC.shape, dtype=np.float32)
