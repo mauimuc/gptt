@@ -34,11 +34,22 @@ pt12 = pair.great_circle_path
 fh = h5py.File('../dat/example.hdf5', 'r')
 
 points = fh['points']
+x, y = m(points['lon'], points['lat'])
 cov_CC = fh['cov'][-1,:,:]
 
 
-
 K = cov_CC[pair.indices,:]
+vmax = np.abs(K[12,:]).max()
+
+pcol = ax_map.tripcolor(x, y, K[12,:], cmap='bwr', vmin=-vmax, vmax=vmax, rasterized=True)
+cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
+cbar.set_ticks(np.linspace(-vmax, vmax, 7)[1:-1].round(-1))
+cbar.solids.set_edgecolor("face")
+
+plt.savefig('../fig_kernel_pst.pgf')
+pcol.remove()
+for a in ax_cbr.artists:
+    a.remove()
 
 # Integrate travel time
 cor_TC = simps(K, dx=pair.spacing, axis=0)
@@ -46,7 +57,6 @@ cor_TC = np.ma.masked_array(cor_TC, cor_TC<0.01)
 
 vmax = np.abs(cor_TC).max()
 
-x, y = m(points['lon'], points['lat'])
 pcol = ax_map.tripcolor(x, y, cor_TC, cmap='bwr', vmin=-vmax, vmax=vmax, rasterized=True)
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 cbar.set_ticks(np.linspace(-vmax, vmax, 7)[1:-1].round(3))

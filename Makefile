@@ -12,7 +12,7 @@ fig_path_coverage.pgf fig_reference_model.pgf fig_discretization.pgf fig_kernel.
 fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
 	cd src; python fig_posterior.py
 
-fig_correlation_pst.pgf: ./src/fig_correlation_pst.py ./dat/example.hdf5
+fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/example.hdf5
 	cd src; python fig_correlation_pst.py
 
 presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel.pgf fig_correlation.pgf fig_discretization.pgf animation.mp4 animation_pst.png fig_correlation_pst.pgf
