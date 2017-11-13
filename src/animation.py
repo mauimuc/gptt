@@ -16,8 +16,8 @@ fh = h5py.File('../dat/example.hdf5', 'r')
 
 points = fh['points']
 stations = fh['stations']
-mu_C = fh['mean']
-cov_CC = fh['cov']
+mu_C = fh['mu']
+sd_C = fh['sd']
 
 
 # Ratio 16:9
@@ -39,7 +39,7 @@ m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
 
 # Subplot right
 m = prepare_map(ax_sd, pls=[0,0,0,0])
-tpc_sd = ax_sd.tripcolor(x, y, np.sqrt(cov_CC[0,:,:].diagonal()), \
+tpc_sd = ax_sd.tripcolor(x, y, sd_C[0,:], \
     vmin=15, vmax=40, cmap='Purples', shading='gouraud')
 cbar = m.colorbar(tpc_sd, location='bottom')
 cbar.set_ticks([15, 20, 25, 30, 35, 40])
@@ -53,7 +53,7 @@ def animate(i):
     global mu_C, cov_CC
 
     tpc_mu.set_array(mu_C[i,:])
-    tpc_sd.set_array(np.sqrt(cov_CC[i,:,:].diagonal()))
+    tpc_sd.set_array(sd_C[i,:])
     print('Frame %i of %i' % (i+1, mu_C.shape[0]))
 
     return tpc_mu, tpc_sd

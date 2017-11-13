@@ -35,7 +35,7 @@ fh = h5py.File('../dat/example.hdf5', 'r')
 
 points = fh['points']
 x, y = m(points['lon'], points['lat'])
-cov_CC = fh['cov'][-1,:,:]
+cov_CC = fh['cov_CC_pst'][:,:]
 
 
 K = cov_CC[pair.indices,:]

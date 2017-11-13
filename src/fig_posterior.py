@@ -16,9 +16,8 @@ fh = h5py.File('../dat/example.hdf5', 'r')
 
 points = fh['points']
 stations = fh['stations']
-mu_C = fh['mean'][-1,:]
-cov_CC = fh['cov'][-1,:,:]
-sd_C = np.sqrt(cov_CC.diagonal())
+mu_C = fh['mu'][-1,:]
+sd_C = fh['sd'][-1,:]
 
 plt.rcParams.update(rcParams)
 fig = plt.figure(figsize=(6.5,4))

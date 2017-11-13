@@ -80,18 +80,17 @@ if __name__ == '__main__':
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
     fh = h5py.File('../dat/example.hdf5', 'w')
-    dst = fh.create_dataset('stations', stations.shape, dtype=stations.dtype)
-    dst[:] = stations
-    pst = fh.create_dataset('points', points.shape, dtype=dt_latlon)
-    pst[:] = points
-    dpa = fh.create_dataset('d', (len(pairs), ), dtype=float)
-    dpa[:] = np.array( [pair.d for pair in pairs] )
+    fh.create_dataset('stations', data=stations)
+    fh.create_dataset('points', data=points)
+    fh.create_dataset('d', data=[pair.d for pair in pairs])
 
-    must = fh.create_dataset('mean', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
-    covst = fh.create_dataset('cov', (len(pairs) + 1, ) + cov_CC.shape, dtype=np.float32)
+    fh.create_dataset('cov_CC_pri', data=cov_CC)
 
-    must[0,:] = mu_C
-    covst[0,:,:] = cov_CC
+    dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+    dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+
+    dset_mu[0,:] = mu_C
+    dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
     # Successively consider evidence
     for i in range(len(pairs)):
         pair = pairs[i]
@@ -108,8 +107,10 @@ if __name__ == '__main__':
         # Screen output
         print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
 
-        must[i+1,:] = mu_C
-        covst[i+1,:,:] = cov_CC
+        dset_mu[i+1,:] = mu_C
+        dset_sd[i+1,:] = np.sqrt(cov_CC.diagonal())
+
+    fh.create_dataset('cov_CC_pst', data=cov_CC)
 
     fh.close()
 
