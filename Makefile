@@ -18,6 +18,9 @@ fig_discretization.pgf: ./src/fig_discretization.py ./src/example.py ./src/plott
 fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/example.py ./src/plotting.py
 	cd src; python fig_path_coverage.py
 
+fig_kernel_pri.pgf: ./src/fig_kernel_pri.py ./src/example.py ./src/plotting.py
+	cd src; python fig_kernel_pri.py
+
 fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
 	cd src; python fig_posterior.py
 
