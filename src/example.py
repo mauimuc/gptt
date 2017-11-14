@@ -41,6 +41,9 @@ npts = np.round(central_angle/ds, 0).astype(int) - 2
 
 # Measurement noise; standard deviation
 epsilon = 0.01
+# Kernel parameters
+ell = 16000 # Characteristic length
+tau = 40  # A priori uncertainty; standard deviation
 
 # Allocate memory for sampling points
 points = np.empty(npts.sum() + stations.size, dtype=dt_latlon)
@@ -59,6 +62,7 @@ for i, j, n in np.nditer( (idx, idy, npts) ):
     points[indices] = pair_ij.great_circle_path
 
     # Pseudo observations
+    # TODO Save values to file to have it reproducible
     pair_ij.T_act = simps(r_E/c_act(points[indices]), dx=pair_ij.spacing)
     pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
 
@@ -67,10 +71,9 @@ for i, j, n in np.nditer( (idx, idy, npts) ):
     # Increment index
     index += n
 
+# Observations
+# TODO Save values to file to have it reproducible
 d = [pair.d for pair in pairs]
-
-ell = 16000 # Characteristic length
-tau = 40  # A priori uncertainty; standard deviation
 
 if __name__ == '__main__':
     from gptt import gauss_kernel, f_mu_T, f_cov_TT, misfit
@@ -81,26 +84,29 @@ if __name__ == '__main__':
     # A priori covariance
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
+    # Open HDF5 file handle
     fh = h5py.File('../dat/example.hdf5', 'w')
+    # Store stations
     fh.create_dataset('stations', data=stations)
+    # Store discretization
     fh.create_dataset('points', data=points)
-    fh.create_dataset('d', data=d)
-
-    fh.create_dataset('cov_CC_pri', data=cov_CC)
-
+    # Store prior covariance matrix
+    fh.create_dataset('cov_CC_pri', data=cov_CC, dtype=np.float32)
+    # Create datasets for mean, standard deviation and misfit
     dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
     dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
     dset_misfit = fh.create_dataset('misfit', (len(pairs) + 1, ), dtype=np.float32)
-
+    # Save prior mean and standard deviation
     dset_mu[0,:] = mu_C
     dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
-
+    # Calculate and save prior misfit
     mu_T = f_mu_T(pairs, mu_C)
     cov_TT = f_cov_TT(pairs, mu_C, cov_CC)
     dset_misfit[0] = misfit(d, mu_T, cov_TT)
 
     # Successively consider evidence
     for i in range(len(pairs)):
+        # To be considered evidence
         pair = pairs[i]
         # Prior mean
         mu_T = pair.T(mu_C)
@@ -114,15 +120,17 @@ if __name__ == '__main__':
         cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
         # Screen output
         print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
-
+        # Save mean and standard deviation
         dset_mu[i+1,:] = mu_C
         dset_sd[i+1,:] = np.sqrt(cov_CC.diagonal())
+        # Calculate and save misfit
         mu_T = f_mu_T(pairs, mu_C)
         cov_TT = f_cov_TT(pairs, mu_C, cov_CC)
         dset_misfit[i+1] = misfit(d, mu_T, cov_TT)
 
+    # Save posterior covariance matrix
     fh.create_dataset('cov_CC_pst', data=cov_CC)
-
+    # Close HDF5 file
     fh.close()
 
     # Write parameters for being used in the LaTeX document
