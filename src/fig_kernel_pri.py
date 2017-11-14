@@ -5,14 +5,13 @@ __author__    = "Stefan Mauerberger"
 __copyright__ = "Copyright (C) 2017 Stefan Mauerberger"
 __license__   = "GPLv3"
 
-''' Save a plot of the correlation kernel as PGF file '''
+''' Save a plot of the prior covariance kernel as PGF file '''
 
 import numpy as np
 from matplotlib import pyplot as plt
-from gptt import dt_latlon, cos_central_angle, gauss_kernel, StationPair
-from scipy.integrate import simps
-from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from example import stations, pairs, ell, tau, points, c_act
+from gptt import dt_latlon, gauss_kernel
+from plotting import rcParams, prepare_map
+from example import stations, pairs, ell, tau
 
 plt.rcParams.update(rcParams)
 
@@ -47,10 +46,10 @@ K = gauss_kernel(p, grid, tau=tau, ell=ell)
 K = np.ma.masked_less(K, 1)
 vmax = K.max()
 
+# Plot correlation kernel; pcolor needs points in between
 lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
 pcol = m.pcolormesh(lon, lat, K, latlon=True, cmap='PuOr', rasterized=True, \
                     vmin=-vmax, vmax=vmax, zorder=1)
-
 # Make colorbar
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 cbar.solids.set_edgecolor("face")
