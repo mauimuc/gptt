@@ -8,16 +8,19 @@ __license__   = "GPLv3"
 from mpl_toolkits.basemap import Basemap
 from gptt import read_station_file
 
-#Options
+# Options
 rcParams = {'text.usetex' : True,
-            'font.size' : 9,
+            'font.size' : 6,
             'savefig.dpi': 300,
-            'savefig.pad_inches': 0.0,
+            'savefig.pad_inches': 0.01,
+            'savefig.bbox': 'tight',
             'pgf.texsystem' : 'pdflatex',
-            'pgf.rcfonts': False, }
+            'pgf.rcfonts': False,
+            'axes.linewidth': 0.5,
+            }
 
 
-# Read coordinates of the NORSA Array
+# Read station coordinates
 stations = read_station_file('../dat/stations.dat')
 # Lower left corner
 lllon = stations['lon'].min() - 1
@@ -28,9 +31,10 @@ urlat = stations['lat'].max() + 0.5
 
 
 def prepare_map(ax=None, pls=[1,0,0,0]):
-    ''' Prepare map and plot coast lines, parallels and meridians and returns the Basemap class. '''
+    ''' Prepare map and plot coast lines, parallels and meridians and returns the Basemap object.
+        The argument pls is more a hack for having plots side by side. '''
     m = Basemap(llcrnrlon=lllon, llcrnrlat=lllat, urcrnrlon=urlon, urcrnrlat=urlat,\
-                resolution='i', projection='merc',\
+                resolution='i', projection='merc', \
                 lat_0=65, lon_0=17, lat_ts=50, ax=ax)
     m.drawcoastlines(color='gray', linewidth=0.5)
     m.drawparallels((65,69), labels=pls,       linewidth=0.5, dashes=(2,2))

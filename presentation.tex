@@ -1,0 +1,324 @@
+\documentclass[aspectratio=169, t, 10pt]{beamer}
+\usetheme{Boadilla}
+\beamertemplatenavigationsymbolsempty
+
+\usepackage{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{pgfplots}
+\usepackage{mathtools}
+\mathtoolsset{showonlyrefs}
+\usepackage{qrcode}
+\usepackage{multimedia}
+
+\newcommand\Mean[1]{\mathbb{E}\!\left[#1\right]}
+\newcommand\Var[1]{\mathbb{V}\!\left[#1\right]}
+\newcommand\Cov[2]{\mathrm{Cov}\!\left[#1,#2\right]}
+\newcommand\Gauss[2]{\mathcal{N}\!\left({#1},\,{#2}\right)}
+\newcommand\GP[2]{\mathcal{GP}\!\left({#1},\,{#2}\right)}
+\newcommand{\Identity}{\mathbb{I}}
+
+\title[Correlation based travel time inversion]{Bayesian Travel Time Inversion adopting Gaussian Process Regression}
+\subtitle{-- with the focus on uncertainty analysis --}
+\author[\tt mauerber@uni-potsdam.de]{Stefan Mauerberger \and Matthias Holschneider}
+\institute[Math@UP]{University Potsdam, Institute of Mathematics}
+\titlegraphic{%\vspace{-1cm}
+              \hspace{2cm}
+              \parbox[c]{0.17\linewidth}{\includegraphics[width=\linewidth]{./logos/GeoSim_Logo}}
+              \hfill
+              \parbox[c]{0.10\linewidth}{\includegraphics[width=\linewidth]{./logos/UniPotsdam_Logo}}
+              \hspace{2cm}
+              }
+\date[AGU~2017]{AGU Fall Meeting -- 13\textsuperscript{th} December 2017}
+
+\begin{document}
+\input{def_example}
+
+\frame[noframenumbering, plain]
+    {\maketitle}
+
+\begin{frame}
+    \frametitle{Overview}
+    \framesubtitle{Where are we driving at -- What I am going to present}
+
+\begin{columns}%
+\column{.55\textwidth}%
+    \vspace{-4mm}
+    \begin{block}{Surface Wave Tomography}
+        \begin{itemize}
+            \item Model phase velocities
+            \item Correlation-based Bayesian inversion
+            %\item Use ambient noise records
+            %\item Correlations from observational functional
+            \item Explicit correlation structure
+        \end{itemize}
+        \hfill {\Large $\leadsto$} Realistic, location dependent model uncertainties ~
+    \end{block}
+
+    \begin{exampleblock}{First steps \& Simplifications}
+        \begin{itemize}
+            \item Proof of concept (Subset of ScanArray)
+            \item No dispersion; No refraction; Frequency band
+            \item Synthetic test; Two large scale anomalies
+            \item Pseudo observations corrupted by normal noise
+        \end{itemize}
+        \hfill {\Large $\leadsto$} A\,posteriori distribution of phase velocity ~
+    \end{exampleblock}
+
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_reference_model.pgf}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Travel Time Observations}
+    \framesubtitle{a functional w.r.t.~an underlying velocity model}
+
+\begin{columns}
+\column{.55\textwidth}%
+    \begin{equation}
+        d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
+    \end{equation}
+    \begin{description}[leftmargin=! ,labelwidth=1cm]
+        \item [Measured value]           $d$
+        \item [Source location]          $s$
+        \item [Receiver position]        $r$
+        \item [Observational functional] $\mathrm T_{s,r}[\cdot]$
+        \item [Velocity model]           $v$
+        \item [Ray path]                 $C$
+        \item [Measurement error]        $\varepsilon$
+    \end{description}
+
+    \begin{alertblock}{It is the velocity model what we are after}
+    \begin{itemize}
+        \item Travel times are putting an Integral-constraint on $v$
+        \item Non-linearity is a major concern
+    \end{itemize}
+    \end{alertblock}
+
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_path_coverage.pgf}
+    \small
+    \begin{align}
+        N_\text{stn} &= \SFWnst &
+        & \leadsto &
+        N_\text{obs} &= \SFWnobs
+    \end{align}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{A\,Priori Velocity Model}
+    \framesubtitle{expressing our ignorance}
+
+\begin{columns}
+\column{.55\textwidth}%
+    \begin{block}{Model $v(x)$ a Gaussian Random Field}
+    \begin{equation}
+        v \to V \sim \GP{\mu_V}{K_V}
+    \end{equation}
+    \begin{description}[leftmargin=! ,labelwidth=6cm]
+        \item [Prior mean function] $\mu_V(x) = \SFWmuCpri \, \frac ms$
+        \item [Covariance function] $K_V(x,y)$
+    \end{description}
+    \end{block}
+    \medskip
+
+    Correlation Kernel
+    \begin{equation}
+        K_V(x,y) = \tau^2 \exp\left\{ -\frac12 \frac{d(x,y)^2}{\ell^2}\right\}
+    \end{equation}
+    \begin{description}[leftmargin=! ,labelwidth=6cm]
+        \item [Standard deviation]   $\tau = \SFWtau \, \frac ms$
+        \item [Great circle distance] $d(x,y)$
+        \item [Characteristic lenth]  $\ell = \SFWell \, m$
+    \end{description}
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_kernel_pri.pgf}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Linearization}
+    \framesubtitle{Gaussianity is only preserved under linear maps}
+
+\begin{columns}
+\column{.55\textwidth}%
+    \begin{equation}
+        \mathrm T_{s,r}[v] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
+    \end{equation}
+    \begin{description}[leftmargin=!, labelwidth=1cm]
+        \item [Taylor expansion] 1\textsuperscript{st} order
+        \item [point of expansion] $\mu_V$
+    \end{description}
+    \medskip
+
+    \begin{block}{Approximated correlations}
+    \begin{equation}
+        \Cov{V}{\mathrm T_{s,r}[V]\,} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
+    \end{equation}
+    \end{block}
+
+    \begin{block}{Approximated covariance}
+    \setlength\abovedisplayskip{0pt}
+    \begin{equation}
+        \Cov{\mathrm T_{s,r}[V]}{\mathrm T_{\acute s, \acute r}[V]\,} \approx  \int_C \int_{\acute C} \frac{K_V(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r
+    \end{equation}
+    \end{block}
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_correlation_pri.pgf}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Bayesian Posterior Distribution}
+    \framesubtitle{Gaussian Process Regression}
+
+\begin{columns}
+\column{.55\textwidth}%
+    \begin{equation}
+        D = T + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
+    \end{equation}
+    \begin{description}[leftmargin=!, labelwidth=1cm]
+        \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2 = \SFWepsilon^2 }$
+        \item [Prior travel times] $\mu_D = \Mean{T_{s,r}[\mu_V]\,}$
+        \item [Covariance matrix]  $\Sigma_{DD} = \Cov TT  + \Identity \sigma_\varepsilon^2$
+    \end{description}
+
+    \begin{block}{Conditional mean and covariance}
+    \setlength\abovedisplayskip{0pt}
+    \begin{alignat}{3}
+        \Mean{V|d} &= \mu_V &&+ \Cov VD \Var{D}^{-1} \big( d - \Mean{D} \big)
+        \\
+        \Var{V|d}  &= K_V   &&- \Cov VD \Var{D}^{-1} \Cov DV
+    \end{alignat}
+    function space view; no expansion in basis function
+    \end{block}
+
+    \begin{alertblock}{Accommodate non-linearity}
+        \begin{itemize}
+            \item Single evidence at a time
+            \item Correlations and Variances from predecessor
+        \end{itemize}
+    \end{alertblock}
+
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_discretization.pgf}
+    \small
+    \begin{align}
+        \delta\sphericalangle &\approx \SFWdeltaangle\,^\circ &
+        & \leadsto &
+        N &= \SFWnpts
+    \end{align}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Successive Approach}
+    \begin{center}
+    \movie[height=0.85\textheight, width=1.51\textheight, autostart]{\includegraphics[height=0.85\textheight, width=1.51\textheight]{animation_pst}}{animation.mp4}
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Posterior Correlation of the model }
+    \framesubtitle{I am surprised by its complexity \dots }
+
+\begin{columns}
+\column{.55\textwidth}%
+    \dots
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \only<1>{\input{fig_kernel_pri.pgf}}
+    \only<2>{\input{fig_kernel_pst.pgf}}
+
+\end{columns}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Posterior Correlation Pattern}
+    \framesubtitle{\dots }
+
+\begin{columns}
+\column{.55\textwidth}%
+    \begin{itemize}
+        \item I am surprised by its complexity
+        \item Values shrunk by four order of magnitude
+    \end{itemize}
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \only<1>{\input{fig_correlation_pri.pgf}}
+    \only<2>{\input{fig_correlation_pst.pgf}}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conclusions}
+
+    \input{fig_misfit.pgf}
+
+    Preliminary results
+    \begin{itemize}
+        \item Accounts for irregular data distributions
+        \item Linearization performs well
+        \item Realistic assessment of spatial uncertainties
+        \item Computationally simple
+        \item All calculus in the function space view \\
+              No basis functions, no truncations at a certain degree
+        \item Memory intense
+    \end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outlook}
+
+\begin{columns}
+\column{.55\textwidth}%
+    \begin{itemize}
+        \item Average slowness is a decent observable
+        \item Succesion order
+        \item Dispersion;
+            kernel accounting for individual frequency bands
+        \item Real data;
+            estimation of hyper parameters
+    \end{itemize}
+
+\column[T]{.44\textwidth}
+    \hspace{15mm} Follow the project on GitHub \\[1cm]
+    \hfill \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}} \hspace{20mm}
+\end{columns}
+
+\end{frame}
+
+\end{document}

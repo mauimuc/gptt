@@ -67,11 +67,13 @@ for i, j, n in np.nditer( (idx, idy, npts) ):
     # Increment index
     index += n
 
-ell = 11000 # Characteristic length
+d = [pair.d for pair in pairs]
+
+ell = 16000 # Characteristic length
 tau = 40  # A priori uncertainty; standard deviation
 
 if __name__ == '__main__':
-    from gptt import gauss_kernel
+    from gptt import gauss_kernel, f_mu_T, f_cov_TT, misfit
     import h5py
 
     # A priori assumptions
@@ -80,16 +82,23 @@ if __name__ == '__main__':
     cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
     fh = h5py.File('../dat/example.hdf5', 'w')
-    dst = fh.create_dataset('stations', stations.shape, dtype=stations.dtype)
-    dst[:] = stations
-    pst = fh.create_dataset('points', points.shape, dtype=dt_latlon)
-    pst[:] = points
+    fh.create_dataset('stations', data=stations)
+    fh.create_dataset('points', data=points)
+    fh.create_dataset('d', data=d)
 
-    must = fh.create_dataset('mean', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
-    covst = fh.create_dataset('cov', (len(pairs) + 1, ) + cov_CC.shape, dtype=np.float32)
+    fh.create_dataset('cov_CC_pri', data=cov_CC)
 
-    must[0,:] = mu_C
-    covst[0,:,:] = cov_CC
+    dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+    dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
+    dset_misfit = fh.create_dataset('misfit', (len(pairs) + 1, ), dtype=np.float32)
+
+    dset_mu[0,:] = mu_C
+    dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
+
+    mu_T = f_mu_T(pairs, mu_C)
+    cov_TT = f_cov_TT(pairs, mu_C, cov_CC)
+    dset_misfit[0] = misfit(d, mu_T, cov_TT)
+
     # Successively consider evidence
     for i in range(len(pairs)):
         pair = pairs[i]
@@ -106,8 +115,13 @@ if __name__ == '__main__':
         # Screen output
         print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
 
-        must[i+1,:] = mu_C
-        covst[i+1,:,:] = cov_CC
+        dset_mu[i+1,:] = mu_C
+        dset_sd[i+1,:] = np.sqrt(cov_CC.diagonal())
+        mu_T = f_mu_T(pairs, mu_C)
+        cov_TT = f_cov_TT(pairs, mu_C, cov_CC)
+        dset_misfit[i+1] = misfit(d, mu_T, cov_TT)
+
+    fh.create_dataset('cov_CC_pst', data=cov_CC)
 
     fh.close()
 

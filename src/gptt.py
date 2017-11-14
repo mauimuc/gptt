@@ -119,7 +119,7 @@ class StationPair(object):
                       dx=self.spacing, axis=-1)
 
 
-def mu_T(pairs, mean):
+def f_mu_T(pairs, mean):
     ''' Calculate mean travel time '''
     N = len(pairs)
     res = np.empty(N)
@@ -127,7 +127,7 @@ def mu_T(pairs, mean):
         res[i] = simps(r_E/mean[pairs[i].indices], dx=pairs[i].spacing)
     return res
 
-def cov_TT(pairs, mean, cov):
+def f_cov_TT(pairs, mean, cov):
     N = len(pairs)
     res = np.empty((N,N))
     for i in range(N):
