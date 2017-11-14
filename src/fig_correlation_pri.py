@@ -9,10 +9,10 @@ __license__   = "GPLv3"
 
 import numpy as np
 from matplotlib import pyplot as plt
-from gptt import dt_latlon, cos_central_angle, gauss_kernel, StationPair
+from gptt import dt_latlon, gauss_kernel
 from scipy.integrate import simps
-from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from example import stations, pairs, ell, tau, points, c_act
+from plotting import rcParams, prepare_map
+from example import stations, pairs, ell, tau
 
 plt.rcParams.update(rcParams)
 

@@ -7,11 +7,8 @@ __license__   = "GPLv3"
 
 ''' Save a plot of the correlation kernel as PGF file '''
 
-import numpy as np
 from matplotlib import pyplot as plt
-from scipy.integrate import simps
 from plotting import rcParams, prepare_map
-from example import pairs
 import h5py
 
 plt.rcParams.update(rcParams)

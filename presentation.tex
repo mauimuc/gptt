@@ -41,43 +41,29 @@
     \frametitle{Overview}
     \framesubtitle{Where are we driving at -- What I am going to present}
 
-\begin{columns}
-\column{.55\textwidth}
-
+\begin{columns}%
+\column{.55\textwidth}%
+    \vspace{-4mm}
     \begin{block}{Surface Wave Tomography}
         \begin{itemize}
+            \item Model phase velocities
             \item Correlation-based Bayesian inversion
-            \item with ambient noise records
+            %\item Use ambient noise records
+            %\item Correlations from observational functional
             \item Explicit correlation structure
-            \item Observational functional from observational functional
         \end{itemize}
         \hfill {\Large $\leadsto$} Realistic, location dependent model uncertainties ~
     \end{block}
 
-    \begin{exampleblock}{First steps}
+    \begin{exampleblock}{First steps \& Simplifications}
         \begin{itemize}
-            \item A synthetic test for the static field
-            \item Explicit spatial correlation structure
-            \item Proxy correlations for declination, inclination and intensity
+            \item Proof of concept (Subset of ScanArray)
+            \item No dispersion; No refraction; Frequency band
+            \item Synthetic test; Two large scale anomalies
+            \item Pseudo observations corrupted by normal noise
         \end{itemize}
-        \hfill {\Large $\leadsto$} A\,posteriori distribution for the static field ~
+        \hfill {\Large $\leadsto$} A\,posteriori distribution of phase velocity ~
     \end{exampleblock}
-
-
-    Simplifications
-    \begin{itemize}
-        \item Synthetic test
-        \item Proof of concept
-        \item No dispersion
-        \item No refraction
-    \end{itemize}
-
-    Setting
-    \begin{itemize}
-        \item Subset of ScanArray \SFWnst
-        \item Two large scale anomalies
-        \item Pseudo observations
-    \end{itemize}
 
 
 \column[T]{.44\textwidth}
@@ -107,12 +93,22 @@
     \end{description}
 
     \begin{alertblock}{It is the velocity model what we are after}
-    Travel times are putting an Integral-constraint on $v$
+    \begin{itemize}
+        \item Travel times are putting an Integral-constraint on $v$
+        \item Non-linearity is a major concern
+    \end{itemize}
     \end{alertblock}
+
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
     \input{fig_path_coverage.pgf}
+    \small
+    \begin{align}
+        N_\text{stn} &= \SFWnst &
+        & \leadsto &
+        N_\text{obs} &= \SFWnobs
+    \end{align}
 
 \end{columns}
 
@@ -148,7 +144,7 @@
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_kernel.pgf}
+    \input{fig_kernel_pri.pgf}
 
 \end{columns}
 
@@ -157,7 +153,7 @@
 
 \begin{frame}
     \frametitle{Linearization}
-    \framesubtitle{to preserve Gaussianity}
+    \framesubtitle{Gaussianity is only preserved under linear maps}
 
 \begin{columns}
 \column{.55\textwidth}%
@@ -185,7 +181,7 @@
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_correlation.pgf}
+    \input{fig_correlation_pri.pgf}
 
 \end{columns}
 
@@ -214,6 +210,7 @@
         \\
         \Var{V|d}  &= K_V   &&- \Cov VD \Var{D}^{-1} \Cov DV
     \end{alignat}
+    function space view; no expansion in basis function
     \end{block}
 
     \begin{alertblock}{Accommodate non-linearity}
@@ -256,7 +253,8 @@
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_kernel_pst.pgf}
+    \only<1>{\input{fig_kernel_pri.pgf}}
+    \only<2>{\input{fig_kernel_pst.pgf}}
 
 \end{columns}
 
@@ -265,15 +263,19 @@
 
 \begin{frame}
     \frametitle{Posterior Correlation Pattern}
-    \framesubtitle{I am surprised by its complexity \dots }
+    \framesubtitle{\dots }
 
 \begin{columns}
 \column{.55\textwidth}%
-    \dots
+    \begin{itemize}
+        \item I am surprised by its complexity
+        \item Values shrunk by four order of magnitude
+    \end{itemize}
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_correlation_pst.pgf}
+    \only<1>{\input{fig_correlation_pri.pgf}}
+    \only<2>{\input{fig_correlation_pst.pgf}}
 
 \end{columns}
 
@@ -284,7 +286,6 @@
 
     \input{fig_misfit.pgf}
 
-
     Preliminary results
     \begin{itemize}
         \item Accounts for irregular data distributions
@@ -293,14 +294,19 @@
         \item Computationally simple
         \item All calculus in the function space view \\
               No basis functions, no truncations at a certain degree
-        \item Memory intens
+        \item Memory intense
     \end{itemize}
-    \medskip
 
-    Outlook
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Outlook}
+
+\begin{columns}
+\column{.55\textwidth}%
     \begin{itemize}
-        \item Compare with models providing uncertainties
-        \item Use of better suited correlation structures
+        \item Average slowness is a decent observable
         \item Succesion order
         \item Dispersion;
             kernel accounting for individual frequency bands
@@ -308,11 +314,11 @@
             estimation of hyper parameters
     \end{itemize}
 
-\end{frame}
-
-\begin{frame}[c, noframenumbering, plain]
+\column[T]{.44\textwidth}
     \hspace{15mm} Follow the project on GitHub \\[1cm]
     \hfill \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}} \hspace{20mm}
+\end{columns}
+
 \end{frame}
 
 \end{document}
