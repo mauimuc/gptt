@@ -11,6 +11,7 @@ from gptt import read_station_file
 # Options
 rcParams = {'text.usetex' : True,
             'font.size' : 6,
+            'figure.figsize' : (3, 3),
             'savefig.dpi': 300,
             'savefig.pad_inches': 0.01,
             'savefig.bbox': 'tight',

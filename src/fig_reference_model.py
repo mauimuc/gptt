@@ -16,7 +16,7 @@ from example import stations, c_act
 plt.rcParams.update(rcParams)
 
 # Prepare map
-fig = plt.figure(figsize=(3,3))
+fig = plt.figure()
 ax_map = fig.add_subplot(111)
 m = prepare_map(ax=ax_map)
 # Add axes for the colorbar

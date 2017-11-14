@@ -14,7 +14,6 @@ from example import stations, points
 plt.rcParams.update(rcParams)
 
 # Prepare map
-fig = plt.figure(figsize=(3,3))
 m = prepare_map()
 
 # Plot station locations
