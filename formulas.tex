@@ -241,10 +241,28 @@ The small scale patches are suggesting to increase the characteristic length.
 
 \begin{itemize}
     \item Select some frequency band
-    \item Process data and pick slownesses
-    \item Estimate $\mu_C$, $\ell$, $\tau$ and $\varepsilon$
+    \item Correlograms are already there. We have to pick slownesses. How do we exactly turn the picked number into a slowness value? How to estimate the uncertainty at picking?
+    \item Estimate $\mu_C$, $\ell$, $\tau$ and $\varepsilon$. I'd go with a dumb MLE.
 \end{itemize}
 
+\subsection{How might a frequency aware correlation kernel look like?}
+
+Therefore we need frequency dependent variance $\tau(\omega)$ and characteristic length scales $\ell(\omega)$ so that the kernel is of the form
+\begin{equation}
+    K(x,\omega;\acute x,\acute \omega) =
+    \tau(\omega,\acute\omega)^2
+    \exp\left\{-\frac12 \frac{d(x,\acute x)^2}{\ell(\omega,\acute\omega)^2}\right\}
+\end{equation}
+It shall reflect the fact that large structures are affecting long period wave content.
+In contrast high frequencies are sensitive to small scale features.
+It were preferable to just add few more hyper parameters.
+How about a reciprocal dependence i.e.
+\begin{align}
+    \ell(\omega, \acute \omega) &= \frac a{\Delta \omega} + b &
+    &\text{with}&
+    \Delta \omega &= \frac{\omega + \acute\omega}2
+\end{align}
+and to be determined constants $a$ and $b$.
 
 \end{document}
 
