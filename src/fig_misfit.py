@@ -16,10 +16,12 @@ plt.rcParams.update(rcParams)
 # Prepare map
 fig = plt.figure(figsize=(6,1))
 
-fh = h5py.File('../dat/example.hdf5', 'r')
+with h5py.File('../dat/example.hdf5', 'r') as fh:
+    misfit = fh['misfit'][:]
+plt.plot(misfit)
 
-misfit = fh['misfit'][:]
-
+with h5py.File('../dat/succession_sorted.hdf5', 'r') as fh:
+    misfit = fh['misfit'][:]
 plt.plot(misfit)
 
 plt.savefig('../fig_misfit.pgf')

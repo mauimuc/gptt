@@ -140,6 +140,8 @@ def f_cov_TT(pairs, mean, cov):
             res[i,j] = -simps(cor[idx_j]*r_E/mean[idx_j]**2, dx=ds_j)
             if i!=j:
                 res[j,i] = res[i,j]
+            if i==j:
+                res[i,j] += pairs[i].error**2
     return res
 
 def misfit(d, mean, cov):
