@@ -29,50 +29,57 @@ def mu_C_pri(crd):
 # Read station coordinates
 stations = read_station_file('../dat/stations.dat')[::2]
 
-# Indices for all combinations of stations with duplicates dropped
-idx, idy = np.tril_indices(stations.size, -1)
+# Read pseudo data
+# XXX Have that dtype ready
+pseudo_data = np.genfromtxt('../dat/pseudo_data.dat', \
+    dtype=[('stnm1', 'S5'), ('stnm2', 'S5'), ('tt', '<f4'), ('err', '<f4')])
 
 # Determine how fine great circle segments are going to be sampled
+# FIXME shall be derived from records
+# Indices for all combinations of stations with duplicates dropped
+idx, idy = np.tril_indices(stations.size, -1)
 central_angle = np.arccos(cos_central_angle(stations[idx], stations[idy]))
 min_samples = 2
 ds = central_angle.min()/min_samples # Spacing in [rad]
-# Number of samples per path; to suppress duplicates subtract two
-npts = np.round(central_angle/ds, 0).astype(int) - 2
 
+# TODO Estimate hyper-parameters
 # Measurement noise; standard deviation
-epsilon = 0.01
+epsilon = 0.02 # Separate the residual term from measurement noise
 # Kernel parameters
 ell = 16000 # Characteristic length
 tau = 40  # A priori uncertainty; standard deviation
 
-# Allocate memory for sampling points
-points = np.empty(npts.sum() + stations.size, dtype=dt_latlon)
-# An index keeping track where we are at the array of sampling points
-index = stations.size # The first entries are reserved for station coordinates
-# TODO Add design points; e.g. corners of the plot
 pairs = list() # Empty list to store station pairs
-for i, j, n in np.nditer( (idx, idy, npts) ):
-    indices = np.array( [i, ] + range(index, index+n) + [j, ] )
-    st_i = stations[i]
-    st_j = stations[j]
-    pair_ij = StationPair(indices=indices, error=epsilon, \
-                          st1=stations[i], st2=stations[j])
-
-    # Fill array of sampling points
-    points[indices] = pair_ij.great_circle_path
-
+# An index keeping track how many sampling points we have
+index = stations.size # The first entries are reserved for station coordinates
+for stnm1, stnm2, tt, err in pseudo_data:
+    mask = np.logical_or(stations['stnm'] == stnm1, stations['stnm'] == stnm2)
+    st1, st2 = stations[mask]
+    idx1, idx2 = np.where(mask)[0]
+    n = np.round(np.arccos(cos_central_angle(st1, st2))/ds, 0).astype(np.int)
+    indices = np.array( [idx1, ] + range(index, index+n-2) + [idx2, ] )
+    pair = StationPair(st1=st1, st2=st2, indices=indices, error=epsilon)
     # Pseudo observations
-    # TODO Save values to file to have it reproducible
-    pair_ij.T_act = simps(r_E/c_act(points[indices]), dx=pair_ij.spacing)
-    pair_ij.d = pair_ij.T_act + np.random.normal(loc=0, scale=epsilon)
-
+    pair.d = tt + err
+    # True travel time
+    pair.T_act = tt
     # Append to list of station pairs
-    pairs.append(pair_ij)
+    pairs.append(pair)
     # Increment index
-    index += n
+    index += n-2
+
+# Count number of sampling points
+N_points = stations.size + np.sum([pair.npts - 2 for pair in pairs])
+# Allocate memory for sampling points
+points = np.empty( N_points, dtype=dt_latlon)
+# Assign station coordinates
+points[:stations.size] = stations.astype(dt_latlon)
+# TODO Add design points; e.g. corners of the plot
+# Fill array with sampling points
+for pair in pairs:
+    points[pair.indices] = pair.great_circle_path
 
 # Observations
-# TODO Save values to file to have it reproducible
 d = [pair.d for pair in pairs]
 
 if __name__ == '__main__':
