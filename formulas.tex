@@ -192,8 +192,34 @@ Certainly, it were preferable to infer those four parameters from data.
 I don't see any difficulties using an ordinary ML estimate.
 The log likelihood function reads
 \begin{equation}
-    -\frac 12 \left( n \ln 2\pi + n \ln |\Var D| + (D - \Mean D)^T \dots  \right)
+    -\frac 12 \left( n \ln 2\pi + n \ln |\Var D| + (D - \Mean D)^T \Var{D}^{-1} (D - \Mean D) \right)
 \end{equation}
+The deviance were better. Strip off $-\frac12$ and $n\ln2\pi$.
+
+If we try to carry out integrals numerically a grid search will last forever.
+I think we can do quite a bit of calculus analytically.
+Since we assume a constant prior mean, a\,priori travel times are easy:
+\begin{equation}
+    \Mean{T_{a,b}[V]}
+    = \int_0^{\sphericalangle_a^b} \Mean{\frac1V} r_E d t
+    \approx \int_0^{\sphericalangle_a^b} \frac1{\mu_V} r_E d t
+    = \frac1{\mu_V} r_E \sphericalangle_a^b
+    = \frac{d(a,b)}{\mu_V}
+\end{equation}
+Correlations are way more complicated
+\begin{multline}
+    \Cov{V(x)}{T_{ab}[V]\,} =
+   -\frac{r_E}{\mu_V} \int_0^{\sphericalangle_a^b} \Cov{V(x)}{V(c(t))} d t =
+   -\frac{r_E}{\mu_V} \int_0^{\sphericalangle_a^b} K_V(x,c(t))\, d t =
+   \\ =
+   -\frac{r_E}{\mu_V} \tau^2 \int_0^{\sphericalangle_a^b} \exp\!\left(-\frac 12 \frac{d(x,c(t))^2}{\ell^2}\right)\, d t = \dots
+\end{multline}
+substitute $d(x,c(t)) = d_x(c(t))$
+\worries{Well, this is going to be a feast! Will be something with an error function \dots }
+
+Once we have an analytic solution, at best I set up a \texttt{generator} and evaluate on the fly.
+A grid search with thousands of elements shall perform very well in comparison to numeric integration.
+
 
 
 \section{Formulas}
