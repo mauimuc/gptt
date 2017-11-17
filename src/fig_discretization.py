@@ -9,7 +9,10 @@ __license__   = "GPLv3"
 
 from matplotlib import pyplot as plt
 from plotting import rcParams, prepare_map
-from example import stations, points
+from example import pairs
+
+stations = pairs.stations
+points = pairs.points
 
 plt.rcParams.update(rcParams)
 

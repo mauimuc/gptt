@@ -11,8 +11,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import simps
 from plotting import rcParams, prepare_map
-from example import stations, pairs
+from example import pairs
 import h5py
+
+stations = pairs.stations
+
 
 plt.rcParams.update(rcParams)
 

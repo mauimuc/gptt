@@ -12,7 +12,9 @@ from matplotlib import pyplot as plt
 from gptt import dt_latlon, gauss_kernel
 from scipy.integrate import simps
 from plotting import rcParams, prepare_map
-from example import stations, pairs, ell, tau
+from example import pairs, ell, tau
+
+stations = pairs.stations
 
 plt.rcParams.update(rcParams)
 

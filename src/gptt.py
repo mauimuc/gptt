@@ -42,14 +42,67 @@ def gauss_kernel(crd1, crd2, tau, ell):
     d = great_circle_distance(crd1, crd2)
     return tau**2*np.exp(-(d/ell)**2)
 
+class ListPairs(list):
+
+    def __init__(self, observations, all_stations):
+        # Append station-pairs to list
+        for stnm1, stnm2, T_act, obs_err in observations:
+            st1, = all_stations[all_stations['stnm'] == stnm1]
+            st2, = all_stations[all_stations['stnm'] == stnm2]
+            # Append to list of station pairs
+            self.append(StationPair(st1=st1, st2=st2, d=T_act + obs_err))
+        # Get minimum central angel
+        min_ca = self.min_central_angle
+        # Spacing; Determine how fine great circle segments are going to be sampled
+        # FIXME make it an actual variable
+        self.min_samples = 2
+        # FIXME move it to method min_central_angle
+        self.ds = min_ca/self.min_samples
+        station_names = self.stations['stnm'].tolist()
+        # An index keeping track how many sampling points we have
+        # The first entries are reserved for station coordinates
+        index = len(station_names) # number of stations in the data
+        for p in self:
+            idx1 = station_names.index(p.st1['stnm'])
+            idx2 = station_names.index(p.st2['stnm'])
+            n = int(p.central_angle/self.ds) # XXX Rounding errors
+            p.indices = np.array( [idx1, ] + range(index, index+n-2) + [idx2, ] )
+            # XXX Where to appropriately set the standard deviation
+            p.error = 1.
+            # Increment index
+            index += n-2
+
+    @property
+    def min_central_angle(self):
+        return min([p.central_angle for p in self])
+
+    @property
+    def stations(self):
+        ''' Stations present in the data-set '''
+        dups = np.array( [p.st1 for p in self] + [p.st2 for p in self] )
+        return np.unique(dups)
+
+    @property
+    def npts(self):
+        return np.concatenate( [p.indices for p in self] ).max() + 1
+
+    @property
+    def points(self):
+        points = np.empty(self.npts, dtype=dt_latlon)
+        for p in self:
+            points[p.indices] = p.great_circle_path
+        return points
+
+
+
 
 class StationPair(object):
-    def __init__(self, st1, st2, indices, error):
+    def __init__(self, st1, st2, d):
         self.st1 = st1
         self.st2 = st2
-        self.d = None # Observed value
-        self.error = error # Standard deviation
-        self.indices = indices # Discretization
+        self.d = d
+        self.error = None # Standard deviation
+        self.indices = None # Discretization
 
     def __str__(self):
         return '%5s -- %-5s' % (self.st1['stnm'], self.st2['stnm'])

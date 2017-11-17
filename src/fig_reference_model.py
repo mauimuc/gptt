@@ -11,7 +11,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon
 from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from example import stations, c_act
+from example import pairs
+from pseudo_data import c_act
+
+stations = pairs.stations
 
 plt.rcParams.update(rcParams)
 
