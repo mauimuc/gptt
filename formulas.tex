@@ -8,6 +8,9 @@
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{color}
+\usepackage{soul}
+\usepackage[backend=bibtex]{biblatex}
+\addbibresource{refs.bib}
 
 \newcommand{\mypath}{.}
 \newcommand\worries[1]{\textcolor{red}{#1}}
@@ -52,7 +55,7 @@ Travel times amongst stations are given by distance times the average slowness.
 
 The reference model $\tilde v$ is of constant velocity $4\,\sfrac{km}s$ perturbed by two blobs; just large scale anomalies.
 At their maximum those blobs are showing a deviation of about $\pm 1\%$ and a characteristic length of $\approx\!50\,km$.
-To proceed with a partly realistic setting the station geometry is borrowed from a subset of the ScanArray (DOI: 10.14470/6T569239).
+To proceed with a partly realistic setting the station geometry is borrowed from a subset of the ScanArray \parencite{ScanArray2017}.
 Due to computational limitations I am just considering $\SFWnst$ stations.
 Figure~\ref{fig:path_coverage} depicts the reference velocity model and the path coverage.
 
@@ -124,6 +127,22 @@ The increment is chosen as
 i.e.~half the shortest inter-station distance.
 The resulting grid -- totaling to a $\SFWnpts$ points -- is depicted in Figure~\ref{fig:correlation}.
 
+\worries{The implementation \texttt{scipy.integrate.simps} is quite handy.
+However, performance can be even better.
+We could save quite a bit of run-time if we pre-process wights for the quadrature.
+For an uneven number of samples $N\geq3$ with even spacing wight are given by
+\begin{equation}
+    w = (1,4,2,4, \dots ,4,2,4,1
+\end{equation}
+and the integral is approximated by
+\begin{equation}
+    \int_a^b f(x) d x \approx
+    \frac{\Delta x}3\sum_{i=1}^N w_if(x_i)
+\end{equation}
+That seems to be a waste of time.
+Arrays are that big that the vast of time is spent in FPO.
+}
+
 
 \section{Correlation Kernel}
 
@@ -189,7 +208,9 @@ Just to get some result I am using the following values:
 \end{align}
 
 Certainly, it were preferable to infer those four parameters from data.
-I don't see any difficulties using an ordinary ML estimate.
+\st{I don't see any difficulties using an ordinary ML estimate.}
+An MLE can't be used to estimate the characteristic length $\ell$.
+\worries{To estimate $\tau$ doesn't seem to work either.}
 The log likelihood function reads
 \begin{equation}
     -\frac 12 \left( n \ln 2\pi + n \ln |\Var D| + (D - \Mean D)^T \Var{D}^{-1} (D - \Mean D) \right)
@@ -289,6 +310,8 @@ How about a reciprocal dependence i.e.
     \Delta \omega &= \frac{\omega + \acute\omega}2
 \end{align}
 and to be determined constants $a$ and $b$.
+
+\printbibliography
 
 \end{document}
 
