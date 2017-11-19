@@ -7,13 +7,27 @@ __license__   = "GPLv3"
 
 ''' Save a plot of the path coverage as PGF file '''
 
+import numpy as np
 from matplotlib import pyplot as plt
 from plotting import rcParams, prepare_map
-from example import pairs
+from gptt import read_station_file, ListPairs
+from pseudo_data import dt_obs
 
-stations = pairs.stations
 
 plt.rcParams.update(rcParams)
+
+
+# Read station coordinates
+all_stations = read_station_file('../dat/stations.dat')
+# Read pseudo data
+pseudo_data = np.genfromtxt('../dat/pseudo_data.dat', dtype=dt_obs)
+# Instantiate
+pairs = ListPairs(pseudo_data, all_stations)
+# Stations
+stations = pairs.stations
+# Discretization
+points = pairs.points
+
 
 # Prepare map
 m = prepare_map()
@@ -23,9 +37,11 @@ m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
 
 # Plot great circle for all combinations
 for pair in pairs:
-    m.drawgreatcircle(pair.st1['lon'], pair.st1['lat'], \
-                      pair.st2['lon'], pair.st2['lat'], \
-                      linewidth=0.5, color='g', alpha=0.5)
+    path = pair.great_circle_path
+    if path.size == 2:
+        continue
+    m.plot(path['lon'], path['lat'], latlon=True, \
+           linewidth=0.5, color='g', alpha=0.5)
 
 plt.savefig('../fig_path_coverage.pgf')
 

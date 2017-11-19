@@ -7,12 +7,15 @@ __license__   = "GPLv3"
 
 ''' Plotting ... '''
 
+from sys import argv
 import numpy as np
 from matplotlib import pyplot as plt
-from plotting import prepare_map, rcParams
+from gptt import dt_latlon
+from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
+from pseudo_data import c_act
 import h5py
 
-fh = h5py.File('../dat/example.hdf5', 'r')
+fh = h5py.File(argv[1], 'r')
 
 points = fh['points']
 stations = fh['stations']
@@ -26,20 +29,28 @@ fig.subplots_adjust(wspace=0.02)
 ax_mu = fig.add_subplot(121)
 m = prepare_map(ax_mu)
 x, y = m(points['lon'], points['lat'])
-pcol = ax_mu.tripcolor(x, y, mu_C, vmin=3940, vmax=4060, cmap='seismic', rasterized=True)
+pcol = ax_mu.tripcolor(x, y, mu_C, cmap='seismic', rasterized=True, vmin=3900, vmax=4100)
 cbar = m.colorbar(pcol, location='bottom', pad="5%")
-cbar.set_ticks([3950, 3975, 4000, 4025, 4050])
+#cbar.set_ticks([3950, 3975, 4000, 4025, 4050])
 cbar.solids.set_edgecolor("face")
 m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
+
+# Make a lat, lon grid with extent of the map
+N = 150j
+grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
+levels = [3940, 3960, 3980, 4000, 4020, 4040, 4060, 4080]
+m.contour(grid['lon'], grid['lat'], c_act(grid), latlon=True, leverls=levels, colors='k')
 
 ax_sd = fig.add_subplot(122)
 m = prepare_map(ax_sd, pls=[0,0,0,0])
-pcol = ax_sd.tripcolor(x, y, sd_C, cmap='Reds', vmin=20, rasterized=True)
+pcol = ax_sd.tripcolor(x, y, sd_C, cmap='Reds', rasterized=True)
 cbar = m.colorbar(pcol, location='bottom', pad="5%")
-cbar.set_ticks([20, 25, 30, 35])
+#cbar.set_ticks([20, 25, 30, 35])
 cbar.solids.set_edgecolor("face")
 m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
 
-plt.savefig('../fig_example.pgf', bbox_inches='tight')
+out_file = argv[1].replace('dat/','fig_').replace('hdf5', 'pgf')
+print 'writing: %s' % out_file
+plt.savefig(out_file, bbox_inches='tight')
 
 

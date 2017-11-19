@@ -5,17 +5,17 @@ __author__    = "Stefan Mauerberger"
 __copyright__ = "Copyright (C) 2017 Stefan Mauerberger"
 __license__   = "GPLv3"
 
-''' Generates pseudo data from a reference model.
+''' Generates pseudo data from the reference model.
 To guarantee reproducibility do NOT run that script unless for a very good reason. '''
 
 import numpy as np
 from gptt import dt_latlon, great_circle_distance, cos_central_angle, read_station_file, r_E
-from scipy.integrate import quad
+
 
 def c_act(crd):
     ''' Toy model for the wave velocity [m/s] to be recovered. '''
     c = np.full_like(crd, 4e3, dtype=np.float)
-    x1 = np.array((66,14.5), dtype=dt_latlon)
+    x1 = np.array((66.3,14.6), dtype=dt_latlon)
     gcd_x1 = great_circle_distance(crd, x1)
     c += 100*np.exp(-gcd_x1/40e3)
     x2 = np.array((67.5,20), dtype=dt_latlon)
@@ -69,12 +69,13 @@ err_obs = 1. # Standard deviation [s]
 dt_obs = np.dtype( [('stnm1', 'S5'), ('stnm2', 'S5'), ('tt', np.float32), ('err', np.float32)] )
 
 if __name__ == '__main__':
+    from scipy.integrate import quad
 
     # Read station file
     stations = read_station_file('../dat/stations.dat')
 
     # To keep compute time moderate just consider halve the stations
-    stations = stations[::2]
+    stations = stations[:30]
 
     # Indices for all combinations of stations with duplicates dropped
     idx, idy = np.tril_indices(stations.size, -1)

@@ -7,14 +7,27 @@ __license__   = "GPLv3"
 
 ''' Save a plot of the discretization as PGF file '''
 
+import numpy as np
 from matplotlib import pyplot as plt
 from plotting import rcParams, prepare_map
-from example import pairs
+from gptt import read_station_file, ListPairs
+from pseudo_data import dt_obs
 
-stations = pairs.stations
-points = pairs.points
 
 plt.rcParams.update(rcParams)
+
+
+# Read station coordinates
+all_stations = read_station_file('../dat/stations.dat')
+# Read pseudo data
+pseudo_data = np.genfromtxt('../dat/pseudo_data.dat', dtype=dt_obs)
+# Instantiate
+pairs = ListPairs(pseudo_data, all_stations)
+# Stations
+stations = pairs.stations
+# Discretization
+points = pairs.points
+
 
 # Prepare map
 m = prepare_map()

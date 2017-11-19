@@ -9,14 +9,23 @@ __license__   = "GPLv3"
 
 import numpy as np
 from matplotlib import pyplot as plt
-from gptt import dt_latlon
+from gptt import dt_latlon, ListPairs, read_station_file
 from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from example import pairs
-from pseudo_data import c_act
+from pseudo_data import c_act, dt_obs
 
-stations = pairs.stations
 
 plt.rcParams.update(rcParams)
+
+
+# Read station coordinates
+all_stations = read_station_file('../dat/stations.dat')
+# Read pseudo data
+pseudo_data = np.genfromtxt('../dat/pseudo_data.dat', dtype=dt_obs)
+# Instantiate
+pairs = ListPairs(pseudo_data, all_stations)
+# Stations
+stations = pairs.stations
+
 
 # Prepare map
 fig = plt.figure()
@@ -37,11 +46,11 @@ grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon
 c = c_act(grid) # Actual velocity model
 
 # Plot reference model
-ims = m.imshow(c, cmap='seismic', vmin=3940, vmax=4060)
+ims = m.imshow(c, cmap='seismic', vmin=3900, vmax=4100)
 # Make colorbar
 cbar = plt.colorbar(ims, cax=ax_cbr, orientation='horizontal')
-ticks = np.linspace(3950, 4050, 5)
-cbar.set_ticks(ticks)
+#ticks = np.linspace(3950, 4050, 5)
+#cbar.set_ticks(ticks)
 cbar.set_label(r'$^m/_s$')
 cbar.solids.set_edgecolor("face")
 

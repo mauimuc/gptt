@@ -29,7 +29,7 @@ pseudo_data = np.genfromtxt('../dat/pseudo_data.dat', dtype=dt_obs)
 # Measurement noise; standard deviation
 epsilon = 1. # Separate the residual term from measurement noise
 # Kernel parameters
-ell = 26000 # Characteristic length
+ell = 36000 # Characteristic length
 tau = 40  # A priori uncertainty; standard deviation
 
 # Observations
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWdeltaangle{%.3f}' % np.rad2deg(pairs.ds) + '\n')
         fh.write(r'\def\SFWtau{%i}' % tau + '\n')
         fh.write(r'\def\SFWell{%i}' % ell + '\n')
-        fh.write(r'\def\SFWepsilon{%.2f}' % epsilon + '\n')
+        fh.write(r'\def\SFWepsilon{%.1f}' % epsilon + '\n')
         fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri(1)  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
 

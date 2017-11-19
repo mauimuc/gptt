@@ -39,17 +39,17 @@
 \input{def_example}
 
 This is going to be a synthetic test.
-The method of Gaussian process regression is applied together with an underlying correlation structure for surface wave tomography.
+The method of Gaussian process regression is applied together with an underlying correlation structure to surface wave tomography.
 For the time being I skip on a description of the modeling method.
 Details may be found in my PhD thesis.
 
-The idea in my mind is to use ambient noise records for surface wave tomography.
-The average slowness amongst station pairs are obtained from cross correlations.
+The idea in mind is to use ambient noise records for surface wave tomography.
+Travel times amongst station pairs are obtained from cross correlations.
 To avoid the difficulty of dispersion, only a narrow frequency band shall be considered.
-Slownesses are picked from bandpass filtered correlograms.
 Diffraction is neglected to simplify things even further.
 Then, the ray path between stations is approximated by a great circle segment.
-Travel times amongst stations are given by distance times the average slowness.
+Travel times are picked from bandpass filtered correlograms.
+
 
 \section{Setting}
 
@@ -71,7 +71,7 @@ Figure~\ref{fig:path_coverage} depicts the reference velocity model and the path
 
 Pseudo observations are denoted by $d$ and are generated from the reference velocity model considering all pairs of stations.
 Integrating the slowness along the great circle segment yields synthetic travel times.
-To simulate measurement noise the set of synthetic travel times is corrupted by normal noise of standard deviation $\sigma_\varepsilon = \SFWepsilon$\,.
+To simulate measurement noise the set of synthetic travel times is corrupted by normal noise of standard deviation $\sigma_\varepsilon = \SFWepsilon\,s$.
 In total that are $\SFWnobs$ observations.
 
 

@@ -63,7 +63,7 @@ anim = animation.FuncAnimation(fig, animate, save_count=0, \
                                frames=mu_C.shape[0], interval=100, blit=False)
 
 # Save video
-anim.save('../animation.mp4', dpi=150)
+anim.save('../animation.mp4', dpi=150, extra_args=['-vcodec', 'libx264'])
 
 # Last frame; Necessary for LaTeX beamer
 plt.savefig('../animation_pst.png', dpi=150)
