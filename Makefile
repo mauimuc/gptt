@@ -1,18 +1,21 @@
 .DEFAULT_GOAL := formulas.pdf
 
+./dat/pseudo_data.dat: ./src/reference.py
+	cd src; python reference.py
+
 formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_discretization.pgf fig_correlation_pri.pgf fig_example.pgf
 	pdflatex formulas
 
 def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py
 	cd src; python example.py
 
-fig_reference_model.pgf: ./src/fig_reference_model.py ./src/example.py ./src/plotting.py
+fig_reference_model.pgf: ./src/fig_reference_model.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_reference_model.py
 
-fig_discretization.pgf: ./src/fig_discretization.py ./src/example.py ./src/plotting.py
+fig_discretization.pgf: ./src/fig_discretization.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_discretization.py
 
-fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/example.py ./src/plotting.py
+fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_path_coverage.py
 
 fig_kernel_pri.pgf: ./src/fig_kernel_pri.py ./src/example.py ./src/plotting.py
@@ -37,4 +40,4 @@ animation.mp4 animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/anim
 	cd src; python animation.py
 
 clean:
-	rm -f *.aux *.log *.out *.pgf *.png
+	rm -f *.aux *.log *.out *.pgf *.png ./dat/*.hdf5
