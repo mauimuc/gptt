@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon, ListPairs, read_station_file
 from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from pseudo_data import c_act, dt_obs
+from reference import c_act, dt_obs
 
 
 plt.rcParams.update(rcParams)

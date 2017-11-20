@@ -68,7 +68,7 @@ class ListPairs(list):
             n = int(p.central_angle/self.ds) # XXX Rounding errors
             p.indices = np.array( [idx1, ] + range(index, index+n-2) + [idx2, ] )
             # XXX Where to appropriately set the standard deviation
-            p.error = 1.
+            p.error = 0.5
             # Increment index
             index += n-2
 

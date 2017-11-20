@@ -12,7 +12,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon
 from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
-from pseudo_data import c_act
+from reference import c_act
 import h5py
 
 fh = h5py.File(argv[1], 'r')
@@ -31,7 +31,7 @@ m = prepare_map(ax_mu)
 x, y = m(points['lon'], points['lat'])
 pcol = ax_mu.tripcolor(x, y, mu_C, cmap='seismic', rasterized=True, vmin=3900, vmax=4100)
 cbar = m.colorbar(pcol, location='bottom', pad="5%")
-#cbar.set_ticks([3950, 3975, 4000, 4025, 4050])
+cbar.set_ticks([3920, 3940, 3960, 3980, 4000, 4020, 4040, 4060, 4080])
 cbar.solids.set_edgecolor("face")
 m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
 
@@ -43,14 +43,13 @@ m.contour(grid['lon'], grid['lat'], c_act(grid), latlon=True, leverls=levels, co
 
 ax_sd = fig.add_subplot(122)
 m = prepare_map(ax_sd, pls=[0,0,0,0])
-pcol = ax_sd.tripcolor(x, y, sd_C, cmap='Reds', rasterized=True)
+pcol = ax_sd.tripcolor(x, y, sd_C, cmap='Reds', rasterized=True, vmin=33, vmax=40)
 cbar = m.colorbar(pcol, location='bottom', pad="5%")
-#cbar.set_ticks([20, 25, 30, 35])
+cbar.set_ticks([34, 35, 36, 37, 38, 39])
 cbar.solids.set_edgecolor("face")
 m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
 
 out_file = argv[1].replace('dat/','fig_').replace('hdf5', 'pgf')
-print 'writing: %s' % out_file
 plt.savefig(out_file, bbox_inches='tight')
 
 

@@ -10,7 +10,7 @@ __license__   = "GPLv3"
 import numpy as np
 from gptt import dt_latlon, great_circle_distance, cos_central_angle, r_E, StationPair, read_station_file, ListPairs
 from scipy.integrate import simps
-from pseudo_data import dt_obs
+from reference import dt_obs, err_obs
 
 
 def mu_C_pri(crd):
@@ -26,10 +26,9 @@ pseudo_data = np.genfromtxt('../dat/pseudo_data.dat', dtype=dt_obs)
 
 
 # TODO Estimate hyper-parameters
-# Measurement noise; standard deviation
-epsilon = 1. # Separate the residual term from measurement noise
+# TODO Use a parameter file
 # Kernel parameters
-ell = 36000 # Characteristic length
+ell = 16000 # Characteristic length
 tau = 40  # A priori uncertainty; standard deviation
 
 # Observations
@@ -113,7 +112,7 @@ if __name__ == '__main__':
         fh.write(r'\def\SFWdeltaangle{%.3f}' % np.rad2deg(pairs.ds) + '\n')
         fh.write(r'\def\SFWtau{%i}' % tau + '\n')
         fh.write(r'\def\SFWell{%i}' % ell + '\n')
-        fh.write(r'\def\SFWepsilon{%.1f}' % epsilon + '\n')
+        fh.write(r'\def\SFWepsilon{%.1f}' % pairs[0].error + '\n')
         fh.write(r'\def\SFWmuCpri{%i}' % mu_C_pri(1)  + '\n')
         fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
 

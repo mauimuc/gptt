@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from plotting import rcParams, prepare_map
 from gptt import read_station_file, ListPairs
-from pseudo_data import dt_obs
+from reference import dt_obs
 
 
 plt.rcParams.update(rcParams)

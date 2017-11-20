@@ -9,6 +9,8 @@
 \usepackage{pgfplots}
 \usepackage{color}
 \usepackage{soul}
+\usepackage{afterpage}
+\usepackage{pdflscape}
 \usepackage[backend=bibtex]{biblatex}
 \addbibresource{refs.bib}
 
@@ -182,19 +184,38 @@ Consider white noise at some reference radius $R$ and the covariance is
 \end{equation}
 the choice of $R$ determines the regularity. }
 
-\begin{figure}
-    \centering
-    \begin{tabular}{p{0.49\textwidth}p{0.49\textwidth}}
-    \vspace{0pt} \input{fig_discretization.pgf} &
-    \vspace{0pt} \input{fig_correlation_pri.pgf}
-    \end{tabular}
-    \caption{Example for correlations amongst travel time and a constant velocity model (parameters are listed in Eq.~\ref{eq:parameters}).
-        In addition the overall discretization of is shown. }
-    \label{fig:correlation}
-\end{figure}
+%\begin{figure}
+%    \centering
+%    \begin{tabular}{p{0.49\textwidth}p{0.49\textwidth}}
+%    \vspace{0pt} \input{fig_discretization.pgf} &
+%    \vspace{0pt} \input{fig_correlation_pri.pgf}
+%    \end{tabular}
+%    \caption{Example for correlations amongst travel time and a constant velocity model (parameters are listed in Eq.~\ref{eq:parameters}).
+%        In addition the overall discretization of is shown. }
+%    \label{fig:correlation}
+%\end{figure}
 
 
 \section{A\,Priori Model}
+
+\afterpage{%
+\begin{landscape}
+\thispagestyle{empty}
+\begin{figure}
+    \vspace{-10mm}
+%    \centering
+    \input{fig_example.pgf}%
+    \input{fig_all_at_once.pgf}
+    \input{fig_succession_sorted.pgf}%
+    \input{fig_succession_reverse.pgf}
+    \caption{The left panel shows the posterior mean velocity model whereas the left depicts posterior variances.
+        \worries{TODO: Entire Page, Landscape, two more orders } }
+    \label{fig:example}
+\end{figure}%
+\end{landscape}%
+}
+
+
 
 Let assume an a\,priori model of constant mean velocity.
 Then, four parameters need to be determined before any inversion may be carried out.
@@ -258,13 +279,6 @@ Use a successive approach to build the posterior
 \end{alignat}
 The result is shown in Figure~\ref{fig:example}. The parameters used are listed in Equation~\ref{eq:parameters}.
 The small scale patches are suggesting to increase the characteristic length.
-
-\begin{figure}
-    \centering
-    \input{fig_example.pgf}
-    \caption{The left panel shows the posterior mean velocity model whereas the left depicts posterior variances. }
-    \label{fig:example}
-\end{figure}
 
 
 \section{Next Steps}
