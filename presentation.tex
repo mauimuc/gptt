@@ -183,6 +183,8 @@
     \vspace{-10mm}
     \input{fig_correlation_pri.pgf}
 
+    \small Correlation of $V(x)$ and $T_{s,r}$ kept fix
+
 \end{columns}
 
 \end{frame}
@@ -217,6 +219,8 @@
         \begin{itemize}
             \item Single evidence at a time
             \item Correlations and Variances from predecessor
+            \item Matthias: Drop the term \emph{Radon transformation}
+            \item Analogy with sensitivity kernel
         \end{itemize}
     \end{alertblock}
 
@@ -243,23 +247,6 @@
     \end{center}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Posterior Correlation of the model }
-    \framesubtitle{I am surprised by its complexity \dots }
-
-\begin{columns}
-\column{.55\textwidth}%
-    \dots
-
-\column[T]{.44\textwidth}
-    \vspace{-10mm}
-    \only<1>{\input{fig_kernel_pri.pgf}}
-    \only<2>{\input{fig_kernel_pst.pgf}}
-
-\end{columns}
-
-\end{frame}
-
 
 \begin{frame}
     \frametitle{Posterior Correlation Pattern}
@@ -269,7 +256,7 @@
 \column{.55\textwidth}%
     \begin{itemize}
         \item I am surprised by its complexity
-        \item Values shrunk by four order of magnitude
+        \item Values shrunk by two orders of magnitude
     \end{itemize}
 
 \column[T]{.44\textwidth}
@@ -280,6 +267,7 @@
 \end{columns}
 
 \end{frame}
+
 
 \begin{frame}
     \frametitle{Conclusions}
@@ -300,23 +288,38 @@
 
 \end{frame}
 
-\begin{frame}
-    \frametitle{Outlook}
+\begin{frame}[c]
+    \frametitle{Outlook \& Next Steps }
 
 \begin{columns}
 \column{.55\textwidth}%
     \begin{itemize}
-        \item Average slowness is a decent observable
+        \item For ambient noise records the average slowness
+            \begin{equation}
+                \bar p = \left(\int_C |\acute r(t)| \mathrm d t \right)^{-1} \int_C \frac 1 {v(r(r))} |\acute r(t)| \mathrm d t
+            \end{equation}
+            is the prefered observable
+
+        \item A frequency dependent kernel is needed to account for dispersion
+            \begin{equation}
+                K(x,\omega; \acute x, \acute\omega) = \dots
+            \end{equation}
+
         \item Succesion order
-        \item Dispersion;
-            kernel accounting for individual frequency bands
         \item Real data;
             estimation of hyper parameters
     \end{itemize}
 
-\column[T]{.44\textwidth}
-    \hspace{15mm} Follow the project on GitHub \\[1cm]
-    \hfill \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}} \hspace{20mm}
+\column<2>[T]{.44\textwidth}
+\vspace{-6mm}
+    \begin{center}
+        Follow the project on GitHub
+        \\[6mm]
+        \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}}
+        \\[6mm]
+        \small
+        \href{https://github.com/mauimuc/gptt}{github.com/mauimuc/gptt}
+    \end{center}
 \end{columns}
 
 \end{frame}
