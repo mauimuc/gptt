@@ -38,10 +38,10 @@ fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/e
 fig_misfit.pgf: ./src/fig_misfit.py ./dat/example.hdf5
 	cd src; python fig_misfit.py
 
-presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf animation.mp4 animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf fig_misfit.pgf
+presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf animation.avi animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf fig_misfit.pgf
 	pdflatex presentation
 
-animation.mp4 animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py
+animation.avi animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py
 	cd src; python animation.py
 
 clean:
