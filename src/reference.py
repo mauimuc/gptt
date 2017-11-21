@@ -9,19 +9,45 @@ __license__   = "GPLv3"
 To guarantee reproducibility do NOT run that script unless for a very good reason. '''
 
 import numpy as np
-from gptt import dt_latlon, great_circle_distance, cos_central_angle, read_station_file, r_E
+from gptt import dt_latlon, great_circle_distance, cos_central_angle, read_station_file, r_E, gauss_kernel
+
+class ReferenceModel(object):
+
+    def __init__(self, v0, xs, vs, rs):
+        self._v0 = v0 #
+        self._xs = np.asarray(xs)
+        self._vs = vs
+        self._rs = rs
+
+    def __call__(self, crd):
+        res = np.full_like(crd, self._v0, dtype=np.float)
+        for v, x, r in zip(self._vs, self._xs, self._rs):
+            res += v*gauss_kernel(crd, x, ell=r, tau=1)
+        return res
+
+    @property
+    def min(self):
+        return self.__call__(self._xs).min()
+
+    @property
+    def max(self):
+        return self.__call__(self._xs).max()
+
+    def levels(self, delta):
+        v0 = int(np.round(self._v0))
+        vmin = int(self.min.round())
+        vmax = int(self.max.round())
+        return range(v0, vmin, -delta)[::-1] + range(v0 + delta, vmax, delta)
 
 
-def c_act(crd):
-    ''' Toy model for the wave velocity [m/s] to be recovered. '''
-    c = np.full_like(crd, 4e3, dtype=np.float)
-    x1 = np.array((66.3,14.6), dtype=dt_latlon)
-    gcd_x1 = great_circle_distance(crd, x1)
-    c += 100*np.exp(-gcd_x1/40e3)
-    x2 = np.array((67.5,20), dtype=dt_latlon)
-    gcd_x2 = great_circle_distance(crd, x2)
-    c -= 80*np.exp(-gcd_x2/65e3)
-    return c
+# Parameters of the reference model
+v0 = 4e3
+xs = [np.array((66.3,14.6), dtype=dt_latlon), np.array((67.5,20), dtype=dt_latlon)]
+vs = [100, -80]
+rs = [75e3, 75e3]
+# Instantiate reference model
+c_act = ReferenceModel(v0, xs, vs, rs)
+
 
 class GCP(object):
     ''' Parametrization of the great circle segment '''
@@ -75,7 +101,7 @@ if __name__ == '__main__':
     stations = read_station_file('../dat/stations.dat')
 
     # To keep compute time moderate just consider halve the stations
-    stations = stations[:20]
+    stations = stations[::2]
 
     # Indices for all combinations of stations with duplicates dropped
     idx, idy = np.tril_indices(stations.size, -1)

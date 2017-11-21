@@ -29,16 +29,16 @@ fig.subplots_adjust(wspace=0.02)
 ax_mu = fig.add_subplot(121)
 m = prepare_map(ax_mu)
 x, y = m(points['lon'], points['lat'])
-pcol = ax_mu.tripcolor(x, y, mu_C, cmap='seismic', rasterized=True, vmin=3900, vmax=4100)
+pcol = ax_mu.tripcolor(x, y, mu_C, cmap='seismic', rasterized=True, vmin=c_act.min, vmax=c_act.max)
 cbar = m.colorbar(pcol, location='bottom', pad="5%")
-cbar.set_ticks([3920, 3940, 3960, 3980, 4000, 4020, 4040, 4060, 4080])
+cbar.set_ticks(c_act.levels(20))
 cbar.solids.set_edgecolor("face")
 m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
 
 # Make a lat, lon grid with extent of the map
 N = 150j
 grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
-levels = [3940, 3960, 3980, 4000, 4020, 4040, 4060, 4080]
+levels = c_act.levels(20)
 m.contour(grid['lon'], grid['lat'], c_act(grid), latlon=True, leverls=levels, colors='k')
 
 ax_sd = fig.add_subplot(122)
