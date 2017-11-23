@@ -8,17 +8,40 @@ __license__   = "GPLv3"
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
 import numpy as np
-from gptt import gauss_kernel
-from example import pairs, mu_C_pri, tau, ell
+from gptt import gauss_kernel, read_station_file, ListPairs
+from reference import dt_obs
+from configparser import ConfigParser
 import h5py
 
+# Read parameter file
+config = ConfigParser()
+with open('parameter.ini') as fh:
+    config.readfp(fh)
+
+
+# Kernel Parameters
+# TODO Estimate hyper-parameters
+tau = config.getfloat('Prior', 'tau') # A priori uncertainty; standard deviation
+ell = config.getfloat('Prior', 'ell') # Characteristic length
+mu  = config.getfloat('Prior', 'mu') # Constant a priori velocity model
+
+# Read station coordinates
+station_file = config.get('Observations', 'station_file')
+all_stations = read_station_file(station_file)
+# Read pseudo data
+data_file = config.get('Observations', 'data')
+pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
+
+# Observations
+pairs = ListPairs(pseudo_data, all_stations)
 # Sort station pairs by their great circle distance
 pairs.sort(key=lambda p: p.central_angle)
+
 # Discretization
 points = pairs.points
 
 # A priori assumptions
-mu_C = mu_C_pri(points) # The velocity models a priori mean
+mu_C = np.full_like(points, mu, dtype=np.float) # The velocity models a priori mean
 # A priori covariance
 cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 
@@ -56,13 +79,14 @@ for i in range(len(pairs)):
 # Close HDF5 file
 fh.close()
 
+
 ## Sort station pairs by their great circle distance
 #pairs.sort(key=lambda p: p.central_angle, reverse=True)
 ## Discretization
 #points = pairs.points
 
 # A priori assumptions
-mu_C = mu_C_pri(points) # The velocity models a priori mean
+mu_C = np.full_like(points, mu, dtype=np.float) # The velocity models a priori mean
 # A priori covariance
 cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
 

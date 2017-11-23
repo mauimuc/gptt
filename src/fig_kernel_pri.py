@@ -11,11 +11,34 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon, gauss_kernel
 from plotting import rcParams, prepare_map
-from example import pairs, ell, tau
-
-stations = pairs.stations
+from configparser import ConfigParser
+from reference import dt_obs
+from gptt import read_station_file, ListPairs
 
 plt.rcParams.update(rcParams)
+
+
+# Read parameter file
+config = ConfigParser()
+with open('parameter.ini') as fh:
+    config.readfp(fh)
+
+# Kernel Parameters
+tau = config.getfloat('Prior', 'tau') # A priori uncertainty; standard deviation
+ell = config.getfloat('Prior', 'ell') # Characteristic length
+
+# Read station coordinates
+station_file = config.get('Observations', 'station_file')
+all_stations = read_station_file(station_file)
+# Read pseudo data
+data_file = config.get('Observations', 'data')
+pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
+
+# Observations
+pairs = ListPairs(pseudo_data, all_stations)
+# Only those stations occurring in the data
+stations = pairs.stations
+
 
 # Prepare map
 fig = plt.figure()
@@ -27,7 +50,7 @@ ax_cbr = fig.add_axes( (bbox.x0, bbox.y0 - 0.06, bbox.width, 0.04) )
 
 
 # Plot station locations
-m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
+m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True, zorder=10)
 
 
 # Find stations which are the furtherest apart
@@ -45,7 +68,7 @@ grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon
 
 # Calculate kernel at the middle point
 K = gauss_kernel(p, grid, tau=tau, ell=ell)
-K = np.ma.masked_less(K, 1)
+K = np.ma.masked_less(K, K.max()/50)
 vmax = K.max()
 
 # Plot correlation kernel; pcolor needs points in between

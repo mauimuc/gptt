@@ -38,31 +38,21 @@
     {\maketitle}
 
 \begin{frame}
-    \frametitle{Overview}
-    \framesubtitle{Where are we driving at -- What I am going to present}
+    \frametitle{Correlation-Based Bayesian Tomography}
+    \framesubtitle{A non-parametric approach (function space veiw)}
 
 \begin{columns}%
 \column{.55\textwidth}%
-    \vspace{-4mm}
-    \begin{block}{Surface Wave Tomography}
-        \begin{itemize}
-            \item Model phase velocities
-            \item Correlation-based Bayesian inversion
-            %\item Use ambient noise records
-            %\item Correlations from observational functional
-            \item Explicit correlation structure
-        \end{itemize}
-        \hfill {\Large $\leadsto$} Realistic, location dependent model uncertainties ~
-    \end{block}
 
-    \begin{exampleblock}{First steps \& Simplifications}
+    \begin{exampleblock}{Setting \& Simplifications}
         \begin{itemize}
-            \item Proof of concept (Subset of ScanArray)
-            \item No dispersion; No refraction; Frequency band
-            \item Synthetic test; Two large scale anomalies
+            \item Proof of concept
+            \item Synthetic test
+            \item Neglecting dispersion and refraction
+            \item Reference model: Two large scale anomalies
             \item Pseudo observations corrupted by normal noise
         \end{itemize}
-        \hfill {\Large $\leadsto$} A\,posteriori distribution of phase velocity ~
+        \hfill {\Large $\leadsto$} Location dependent model uncertainties ~
     \end{exampleblock}
 
 
@@ -75,21 +65,22 @@
 
 \begin{frame}
     \frametitle{Travel Time Observations}
-    \framesubtitle{a functional w.r.t.~an underlying velocity model}
+    \framesubtitle{a functional w.r.t.~the velocity model}
 
 \begin{columns}
 \column{.55\textwidth}%
     \begin{equation}
         d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
     \end{equation}
+    @Matthias: This is a Radon transformation, am I right?
     \begin{description}[leftmargin=! ,labelwidth=1cm]
         \item [Measured value]           $d$
+        \item [Observational functional] $\mathrm T_{s,r}[\cdot]$
         \item [Source location]          $s$
         \item [Receiver position]        $r$
-        \item [Observational functional] $\mathrm T_{s,r}[\cdot]$
         \item [Velocity model]           $v$
-        \item [Ray path]                 $C$
         \item [Measurement error]        $\varepsilon$
+        \item [Ray path]                 $C$
     \end{description}
 
     \begin{alertblock}{It is the velocity model what we are after}
@@ -102,12 +93,19 @@
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_path_coverage.pgf}
+    \only<1>{\input{fig_path_coverage.pgf}}
+    \only<2>{\input{fig_discretization.pgf}}
     \small
     \begin{align}
         N_\text{stn} &= \SFWnst &
         & \leadsto &
         N_\text{obs} &= \SFWnobs
+        \\
+        \onslide<2>{
+            \delta\sphericalangle &\approx \SFWdeltaangle\,^\circ &
+            & \leadsto &
+            N_\text{grd} &= \SFWnpts
+        }
     \end{align}
 
 \end{columns}
@@ -132,13 +130,13 @@
     \end{block}
     \medskip
 
-    Correlation Kernel
+    Assumed covariance
     \begin{equation}
         K_V(x,y) = \tau^2 \exp\left\{ -\frac12 \frac{d(x,y)^2}{\ell^2}\right\}
     \end{equation}
     \begin{description}[leftmargin=! ,labelwidth=6cm]
-        \item [Standard deviation]   $\tau = \SFWtau \, \frac ms$
         \item [Great circle distance] $d(x,y)$
+        \item [Standard deviation]   $\tau = \SFWtau \, \frac ms$
         \item [Characteristic lenth]  $\ell = \SFWell \, m$
     \end{description}
 
@@ -158,11 +156,11 @@
 \begin{columns}
 \column{.55\textwidth}%
     \begin{equation}
-        \mathrm T_{s,r}[v] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
+        \mathrm T_{s,r}[V] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
     \end{equation}
     \begin{description}[leftmargin=!, labelwidth=1cm]
         \item [Taylor expansion] 1\textsuperscript{st} order
-        \item [point of expansion] $\mu_V$
+        \item [point of expansion] $\mu_V$ (prior mean)
     \end{description}
     \medskip
 
@@ -181,9 +179,11 @@
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_correlation_pri.pgf}
-
-    \small Correlation of $V(x)$ and $T_{s,r}$ kept fix
+    \input{fig_correlation_pri.pgf}%
+    \vspace{-2mm}
+    \begin{center}%
+    \small Correlation of $V(x)$ with $T_{s,r}[V]$ kept fix
+    \end{center}
 
 \end{columns}
 
@@ -195,45 +195,44 @@
     \framesubtitle{Gaussian Process Regression}
 
 \begin{columns}
-\column{.55\textwidth}%
-    \begin{equation}
-        D = T + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
-    \end{equation}
-    \begin{description}[leftmargin=!, labelwidth=1cm]
-        \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2 = \SFWepsilon^2 }$
-        \item [Prior travel times] $\mu_D = \Mean{T_{s,r}[\mu_V]\,}$
-        \item [Covariance matrix]  $\Sigma_{DD} = \Cov TT  + \Identity \sigma_\varepsilon^2$
-    \end{description}
+\column[t]{.48\textwidth}
 
-    \begin{block}{Conditional mean and covariance}
-    \setlength\abovedisplayskip{0pt}
-    \begin{alignat}{3}
-        \Mean{V|d} &= \mu_V &&+ \Cov VD \Var{D}^{-1} \big( d - \Mean{D} \big)
-        \\
-        \Var{V|d}  &= K_V   &&- \Cov VD \Var{D}^{-1} \Cov DV
-    \end{alignat}
-    function space view; no expansion in basis function
+    \begin{block}{Stochastic data model}
+        \begin{equation}
+            D = \mathrm T_{s,r}[V] + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
+        \end{equation}
+        \begin{description}[labelwidth=25mm]
+            \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2}$
+            \item [Uncertainty]        $\sigma_\varepsilon = \SFWepsilon\,s$
+            \item [Prior travel times] $\mu_D = \Mean{\mathrm T_{s,r}[\mu_V]\,}$
+            \item [Covariance matrix]  $\Sigma_{DD} = \Cov{\mathrm T}{\mathrm T}  + \Identity \sigma_\varepsilon^2$
+        \end{description}
     \end{block}
+
+    \begin{itemize}
+        \item The kernel spans function space (RKHS)
+        \item Sort out functions incompatible with data
+    \end{itemize}
+
+\column[t]{.48\textwidth}
+
+    \begin{exampleblock}{Conditional mean and covariance}
+        \setlength\abovedisplayskip{0pt}
+        \begin{alignat}{3}
+            \Mean{V|d} &= \mu_V &&+ \Cov VD \Sigma_{DD}^{-1} \big( d - \mu_{D} \big)
+            \\
+            \Var{V|d}  &= K_V   &&- \Cov VD \Sigma_{DD}^{-1} \Cov DV
+        \end{alignat}
+        \hfill {\Large $\leadsto$} Posterior distribution \phantom{p}
+    \end{exampleblock}
 
     \begin{alertblock}{Accommodate non-linearity}
         \begin{itemize}
             \item Single evidence at a time
             \item Correlations and Variances from predecessor
-            \item Matthias: Drop the term \emph{Radon transformation}
-            \item Analogy with sensitivity kernel
         \end{itemize}
+        \hfill {\Large $\leadsto$} Successive approach ~
     \end{alertblock}
-
-
-\column[T]{.44\textwidth}
-    \vspace{-10mm}
-    \input{fig_discretization.pgf}
-    \small
-    \begin{align}
-        \delta\sphericalangle &\approx \SFWdeltaangle\,^\circ &
-        & \leadsto &
-        N &= \SFWnpts
-    \end{align}
 
 \end{columns}
 
@@ -255,8 +254,7 @@
 \begin{columns}
 \column{.55\textwidth}%
     \begin{itemize}
-        \item I am surprised by its complexity
-        \item Values shrunk by two orders of magnitude
+        \item Analogy with sensitivity kernel
     \end{itemize}
 
 \column[T]{.44\textwidth}
@@ -283,6 +281,7 @@
         \item All calculus in the function space view \\
               No basis functions, no truncations at a certain degree
         \item Memory intense
+        \item Succession order
     \end{itemize}
 
 
@@ -290,25 +289,25 @@
 
 \begin{frame}[c]
     \frametitle{Outlook \& Next Steps }
+    \framesubtitle{Potential future application}
 
 \begin{columns}
 \column{.55\textwidth}%
-    \begin{itemize}
-        \item For ambient noise records the average slowness
-            \begin{equation}
-                \bar p = \left(\int_C |\acute r(t)| \mathrm d t \right)^{-1} \int_C \frac 1 {v(r(r))} |\acute r(t)| \mathrm d t
-            \end{equation}
-            is the prefered observable
 
-        \item A frequency dependent kernel is needed to account for dispersion
-            \begin{equation}
-                K(x,\omega; \acute x, \acute\omega) = \dots
-            \end{equation}
 
-        \item Succesion order
-        \item Real data;
-            estimation of hyper parameters
-    \end{itemize}
+    \begin{block}{Surface Wave Tomography}
+        \begin{itemize}
+            \item Ambient noise records
+            \item Model phase velocities $v(\omega)$
+            \item A frequency dependent kernel
+                \begin{equation}
+                    K(x,\omega; \acute x, \acute\omega) \overset{?}{=}
+                    \tau(\bar \omega)^2 \exp\left\{ -\frac12 \frac{\|x - \acute u\|^2}{\ell(\bar \omega)^2}\right\}
+                \end{equation}
+                to account for dispersion
+            \item Estimation of hyper parameters
+        \end{itemize}
+    \end{block}
 
 \column<2>[T]{.44\textwidth}
 \vspace{-6mm}

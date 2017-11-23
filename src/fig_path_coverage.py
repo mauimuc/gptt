@@ -43,6 +43,6 @@ for pair in pairs:
     m.plot(path['lon'], path['lat'], latlon=True, \
            linewidth=0.5, color='g', alpha=0.5)
 
-plt.savefig('../fig_path_coverage.pgf')
+plt.savefig('../fig_path_coverage.pgf', transparent=True)
 
 

@@ -11,13 +11,30 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import simps
 from plotting import rcParams, prepare_map
-from example import pairs
 import h5py
-
-stations = pairs.stations
-
+from configparser import ConfigParser
+from reference import dt_obs
+from gptt import read_station_file, ListPairs
 
 plt.rcParams.update(rcParams)
+
+
+# Read parameter file
+config = ConfigParser()
+with open('parameter.ini') as fh:
+    config.readfp(fh)
+
+# Read station coordinates
+station_file = config.get('Observations', 'station_file')
+all_stations = read_station_file(station_file)
+# Read pseudo data
+data_file = config.get('Observations', 'data')
+pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
+
+# Observations
+pairs = ListPairs(pseudo_data, all_stations)
+# Only those stations occurring in the data
+stations = pairs.stations
 
 # Prepare map
 fig = plt.figure()

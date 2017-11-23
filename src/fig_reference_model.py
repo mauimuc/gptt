@@ -37,7 +37,7 @@ ax_cbr = fig.add_axes( (bbox.x0, bbox.y0 - 0.06, bbox.width, 0.04) )
 
 
 # Plot station locations
-m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
+m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True, zorder=1)
 
 
 # Make a lat, lon grid with extent of the map
@@ -49,10 +49,11 @@ c = c_act(grid) # Actual velocity model
 ims = m.imshow(c, cmap='seismic', vmin=3900, vmax=4100)
 # Make colorbar
 cbar = plt.colorbar(ims, cax=ax_cbr, orientation='horizontal')
-#ticks = np.linspace(3950, 4050, 5)
-#cbar.set_ticks(ticks)
 cbar.set_label(r'$^m/_s$')
 cbar.solids.set_edgecolor("face")
 
-plt.savefig('../fig_reference_model.pgf')
+# Contour lines
+cnt = m.contour(grid['lon'], grid['lat'], c, levels=c_act.levels(20), latlon=True, colors='k', linewidths=0.5)
+
+plt.savefig('../fig_reference_model.pgf', transparent=True)
 

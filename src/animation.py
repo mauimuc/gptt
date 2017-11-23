@@ -8,7 +8,8 @@ __license__   = "GPLv3"
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
-from plotting import prepare_map
+from plotting import prepare_map, lllat, lllon, urlat, urlon
+from reference import c_act, dt_latlon
 import h5py
 
 
@@ -27,22 +28,35 @@ ax_mu = fig.add_subplot(121)
 ax_sd = fig.add_subplot(122)
 
 # Subplot on the left
+mu_delta = max(c_act._v0 - c_act.min, c_act.max - c_act._v0)
+mu_vmax = (c_act._v0 + mu_delta).round(0)
+mu_vmin = (c_act._v0 - mu_delta).round(0)
 m = prepare_map(ax_mu)
 x, y = m(points['lon'], points['lat'])
 tpc_mu = ax_mu.tripcolor(x, y, mu_C[0,:], \
-    vmin=3940, vmax=4060, cmap='seismic', shading='gouraud')
+    vmin=mu_vmin, vmax=mu_vmax, cmap='seismic', shading='gouraud')
 cbar = m.colorbar(tpc_mu, location='bottom')
-ticks = np.linspace(3950, 4050, 3)
-cbar.set_ticks(ticks)
+cbar.set_ticks( range(mu_vmin.astype(np.int), mu_vmax.astype(np.int), 40)[1:])
 #cbar.set_label('mean')
 m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
+
+# Make a lat, lon grid with extent of the map
+N = 60j
+grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
+c = c_act(grid) # Actual velocity model
+# Contour lines
+cnt = m.contour(grid['lon'], grid['lat'], c, levels=c_act.levels(20), latlon=True, colors='k', linewidths=0.5)
+
+
 
 # Subplot right
 m = prepare_map(ax_sd, pls=[0,0,0,0])
 tpc_sd = ax_sd.tripcolor(x, y, sd_C[0,:], \
-    vmin=15, vmax=40, cmap='Purples', shading='gouraud')
+    vmin=np.min(sd_C), vmax=np.max(sd_C), cmap='Purples', shading='gouraud')
 cbar = m.colorbar(tpc_sd, location='bottom')
-cbar.set_ticks([15, 20, 25, 30, 35, 40])
+vmin_sd = np.min(sd_C).round().astype(np.integer)
+vmax_sd = np.max(sd_C).round().astype(np.integer)
+cbar.set_ticks(range(vmin_sd, vmax_sd, 5))
 #cbar.set_label('standard deviation')
 m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
 

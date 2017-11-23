@@ -93,7 +93,14 @@ class ListPairs(list):
             points[p.indices] = p.great_circle_path
         return points
 
+    @property
+    def mean_station_spacing(self):
+        ca = [p.central_angle*r_E for p in self]
+        return np.mean(ca)
 
+    @property
+    def d(self):
+        return np.array([p.d for p in self])
 
 
 class StationPair(object):

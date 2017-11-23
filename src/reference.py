@@ -43,8 +43,8 @@ class ReferenceModel(object):
 # Parameters of the reference model
 v0 = 4e3
 xs = [np.array((66.3,14.6), dtype=dt_latlon), np.array((67.5,20), dtype=dt_latlon)]
-vs = [100, -80]
-rs = [75e3, 75e3]
+vs = [-100, 80]
+rs = [75e3, 70e3]
 # Instantiate reference model
 c_act = ReferenceModel(v0, xs, vs, rs)
 

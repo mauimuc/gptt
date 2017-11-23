@@ -9,11 +9,34 @@ __license__   = "GPLv3"
 
 import numpy as np
 from matplotlib import pyplot as plt
-from gptt import dt_latlon, gauss_kernel
+from gptt import dt_latlon, gauss_kernel, read_station_file, ListPairs
+from reference import dt_obs
 from scipy.integrate import simps
 from plotting import rcParams, prepare_map
-from example import pairs, ell, tau
+from configparser import ConfigParser
 
+# Read parameter file
+config = ConfigParser()
+with open('parameter.ini') as fh:
+    config.readfp(fh)
+
+# Kernel Parameters
+# TODO Estimate hyper-parameters
+tau = config.getfloat('Prior', 'tau') # A priori uncertainty; standard deviation
+ell = config.getfloat('Prior', 'ell') # Characteristic length
+mu  = config.getfloat('Prior', 'mu') # Constant a priori velocity model
+
+# Read station coordinates
+station_file = config.get('Observations', 'station_file')
+all_stations = read_station_file(station_file)
+# Read pseudo data
+data_file = config.get('Observations', 'data')
+pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
+
+# Observations
+pairs = ListPairs(pseudo_data, all_stations)
+
+# Sort out station occurring in the data
 stations = pairs.stations
 
 plt.rcParams.update(rcParams)
@@ -28,7 +51,7 @@ ax_cbr = fig.add_axes( (bbox.x0, bbox.y0 - 0.06, bbox.width, 0.04) )
 
 
 # Plot station locations
-m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
+m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True, zorder=1)
 
 
 # Find stations which are the furtherest apart
@@ -51,10 +74,14 @@ K = gauss_kernel(path.reshape((-1,1,1)), grid, tau=tau, ell=ell)
 # Highlight parametrization of the great circle segment
 m.plot(path['lon'], path['lat'], latlon=True, lw=0.5, color='g')
 m.scatter(path['lon'][1:-1], path['lat'][1:-1], latlon=True, s=1, marker='.', color='g')
+xr, yr = m(path[-1]['lon'], path[-1]['lat'])
+xs, ys = m(path[ 0]['lon'], path[ 0]['lat'])
+ax_map.text(xr, yr, 'r', fontsize=12, horizontalalignment='center', verticalalignment='center')
+ax_map.text(xs, ys, 's', fontsize=12, horizontalalignment='center', verticalalignment='center')
 
 # Integrate travel time
 cor_TC = simps(K, dx=pair.spacing, axis=0)
-cor_TC = np.ma.masked_less(cor_TC, 0.01)
+cor_TC = np.ma.masked_less(cor_TC, cor_TC.max()/50)
 vmax = cor_TC.max()
 
 # Plot correlation kernel; pcolor needs points in between

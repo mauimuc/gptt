@@ -14,7 +14,7 @@ fig_all_at_once.pgf: ./dat/all_at_once.hdf5 ./src/fig_posterior.py
 formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_discretization.pgf fig_correlation_pri.pgf fig_example.pgf fig_all_at_once.pgf fig_succession_sorted.pgf fig_succession_reverse.pgf
 	pdflatex formulas
 
-def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat
+def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat ./src/parameter.ini
 	cd src; python example.py
 
 fig_reference_model.pgf: ./src/fig_reference_model.py ./src/plotting.py ./dat/pseudo_data.dat
