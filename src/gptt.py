@@ -102,6 +102,36 @@ class ListPairs(list):
     def d(self):
         return np.array([p.d for p in self])
 
+    def mu_T(self, mean):
+        ''' Calculate mean travel time '''
+        N = len(self)
+        res = np.empty(N)
+        for i in range(N):
+            res[i] = simps(r_E/mean[self[i].indices], dx=self[i].spacing)
+        return res
+
+    def cov_TT(self, mean, cov):
+        N = len(self)
+        res = np.empty((N,N))
+        for i in range(N):
+            ds_i = self[i].spacing
+            idx_i = self[i].indices
+            cor = -simps(cov[:,idx_i]*r_E/mean[idx_i]**2, dx=ds_i, axis=-1)
+            for j in range(i, N):
+                ds_j = self[j].spacing
+                idx_j = self[j].indices
+                res[i,j] = -simps(cor[idx_j]*r_E/mean[idx_j]**2, dx=ds_j)
+                if i!=j:
+                    res[j,i] = res[i,j]
+                if i==j:
+                    res[i,j] += self[i].error**2
+        return res
+
+    def misfit(self, mean, cov):
+        # TODO SciPy's cho_solve is a little faster
+        L = np.linalg.cholesky(self.cov_TT(mean, cov))
+        return (np.linalg.solve(L, self.d - self.mu_T(mean))**2).sum()
+
 
 class StationPair(object):
     def __init__(self, st1, st2, d):
@@ -179,32 +209,5 @@ class StationPair(object):
                       dx=self.spacing, axis=-1)
 
 
-def f_mu_T(pairs, mean):
-    ''' Calculate mean travel time '''
-    N = len(pairs)
-    res = np.empty(N)
-    for i in range(N):
-        res[i] = simps(r_E/mean[pairs[i].indices], dx=pairs[i].spacing)
-    return res
 
-def f_cov_TT(pairs, mean, cov):
-    N = len(pairs)
-    res = np.empty((N,N))
-    for i in range(N):
-        ds_i = pairs[i].spacing
-        idx_i = pairs[i].indices
-        cor = -simps(cov[:,idx_i]*r_E/mean[idx_i]**2, dx=ds_i, axis=-1)
-        for j in range(i, N):
-            ds_j = pairs[j].spacing
-            idx_j = pairs[j].indices
-            res[i,j] = -simps(cor[idx_j]*r_E/mean[idx_j]**2, dx=ds_j)
-            if i!=j:
-                res[j,i] = res[i,j]
-            if i==j:
-                res[i,j] += pairs[i].error**2
-    return res
-
-def misfit(d, mean, cov):
-    L = np.linalg.cholesky(cov)
-    return (np.linalg.solve(L, d - mean)**2).sum()
 

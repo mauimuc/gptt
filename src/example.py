@@ -36,6 +36,17 @@ pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
 
 # Observations
 pairs = ListPairs(pseudo_data, all_stations)
+
+if config.has_option('Observations', 'sort'):
+    if config.get('Observations', 'sort') == 'ascending':
+        print 'ascending'
+        pairs.sort(key=lambda p: p.central_angle)
+    elif config.get('Observations', 'sort') == 'descending':
+        pairs.sort(key=lambda p: p.central_angle, reverse=True)
+    else:
+        raise NotImplementedError
+
+
 # Sampling points
 points = pairs.points
 # TODO Add design points; e.g. corners of the plot
@@ -50,7 +61,7 @@ cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).asty
 
 # Open HDF5 file handle
 output_file = config.get('Output', 'filename')
-fh = h5py.File('../dat/example.hdf5', 'w')
+fh = h5py.File(output_file, 'w')
 # Store stations
 fh.create_dataset('stations', data=pairs.stations)
 # Store discretization
@@ -60,7 +71,7 @@ fh.create_dataset('cov_CC_pri', data=cov_CC, dtype=np.float32)
 # Create datasets for mean, standard deviation and misfit
 dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
 dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
-dset_misfit = fh.create_dataset('misfit', (len(pairs) + 1, ), dtype=np.float32)
+#dset_misfit = fh.create_dataset('misfit', (len(pairs) + 1, ), dtype=np.float32)
 # Save prior mean and standard deviation
 dset_mu[0,:] = mu_C
 dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
