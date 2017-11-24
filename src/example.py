@@ -9,8 +9,7 @@ __license__   = "GPLv3"
 
 from sys import argv, stdout
 import numpy as np
-from gptt import dt_latlon, StationPair, read_station_file, ListPairs, gauss_kernel
-from scipy.integrate import simps
+from gptt import dt_latlon, read_station_file, ListPairs, gauss_kernel
 from reference import dt_obs
 from ConfigParser import ConfigParser
 import h5py
@@ -51,14 +50,14 @@ if config.has_option('Observations', 'sort'):
 # Sampling points
 points = pairs.points
 # TODO Add design points; e.g. corners of the plot
-#from plotting import lllat, lllon, urlat, urlon
-#grid = np.rec.fromarrays(np.mgrid[lllat:urlat:3j, lllon:urlon:3j], dtype=dt_latlon)
-#points = np.concatenate( (pairs.points, grid.flatten()))
+from plotting import lllat, lllon, urlat, urlon
+grid = np.rec.fromarrays(np.mgrid[lllat:urlat:4j, lllon:urlon:4j], dtype=dt_latlon)
+points = np.concatenate( (pairs.points, grid.flatten()))
 
 # A priori assumptions
 mu_C = np.full_like(points, mu, dtype=np.float) # The velocity models a priori mean
 # A priori covariance
-cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell).astype('float32')
+cov_CC = gauss_kernel(points[:,np.newaxis], points[np.newaxis,:], tau, ell)
 
 # Open HDF5 file handle
 output_file = config.get('Output', 'filename')
@@ -87,7 +86,7 @@ for i in range(len(pairs)):
     mu_T = pair.T(mu_C)
     # Correlations amongst model and travel time
     # XXX Single precision causes a speed up of dot()
-    cor_CT = pair.cor_CT(mean=mu_C, cov=cov_CC).astype(np.float32)
+    cor_CT = pair.cor_CT(mean=mu_C, cov=cov_CC)
     # Prior variance
     var_DD = pair.var_DD(mean=mu_C, cov=cov_CC)
     # Update posterior mean
