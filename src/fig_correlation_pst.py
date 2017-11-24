@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from scipy.integrate import simps
 from plotting import rcParams, prepare_map
 import h5py
-from configparser import ConfigParser
+from ConfigParser import ConfigParser
 from reference import dt_obs
 from gptt import read_station_file, ListPairs
 

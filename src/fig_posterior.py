@@ -43,7 +43,8 @@ m.contour(grid['lon'], grid['lat'], c_act(grid), latlon=True, leverls=levels, co
 
 ax_sd = fig.add_subplot(122)
 m = prepare_map(ax_sd, pls=[0,0,0,0])
-pcol = ax_sd.tripcolor(x, y, sd_C, cmap='Reds', rasterized=True, vmin=33, vmax=40)
+pcol = ax_sd.tripcolor(x, y, sd_C, cmap='Reds', rasterized=True, \
+    vmin=np.min(sd_C).round(0), vmax=np.max(sd_C).round(0))
 cbar = m.colorbar(pcol, location='bottom', pad="5%")
 cbar.solids.set_edgecolor("face")
 m.scatter(stations['lon'], stations['lat'], latlon=True, marker='.', color='g', s=4)
