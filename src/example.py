@@ -7,7 +7,7 @@ __license__   = "GPLv3"
 
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
-from sys import argv
+from sys import argv, stdout
 import numpy as np
 from gptt import dt_latlon, StationPair, read_station_file, ListPairs, gauss_kernel
 from scipy.integrate import simps
@@ -38,12 +38,11 @@ pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
 # Observations
 pairs = ListPairs(pseudo_data, all_stations)
 
+# XXX Clumsy
 if config.has_option('Observations', 'sort'):
     if config.get('Observations', 'sort') == 'ascending':
-        print 'ascending'
         pairs.sort(key=lambda p: p.central_angle)
     elif config.get('Observations', 'sort') == 'descending':
-        print 'descending'
         pairs.sort(key=lambda p: p.central_angle, reverse=True)
     else:
         raise NotImplementedError
@@ -95,11 +94,14 @@ for i in range(len(pairs)):
     mu_C += cor_CT/var_DD*(pair.d - mu_T)
     # Update posterior co-variance
     cov_CC -= np.dot(cor_CT[:,np.newaxis], cor_CT[np.newaxis,:])/var_DD
-    # Screen output
-    print 'Combination', pair, '%3i/%3i' % (i, len(pairs))
     # Save mean and standard deviation
     dset_mu[i+1,:] = mu_C
     dset_sd[i+1,:] = np.sqrt(cov_CC.diagonal())
+    # Screen output; a very basic progress bar
+    p = int(100.*(i+1)/len(pairs)) # Progress
+    stdout.write('\r[' + p*'#' + (100-p)*'-' + '] %3i' % p + '%' )
+stdout.write('\n')
+
 
 # Save posterior covariance matrix
 fh.create_dataset('cov_CC_pst', data=cov_CC)
@@ -109,6 +111,7 @@ dset_misfit[1] = pairs.misfit(mu_C, cov_CC)
 fh.close()
 
 # Write parameters for being used in the LaTeX document
+# TODO move the below code into its own script
 with open('../def_example.tex', 'w') as fh:
     fh.write(r'\def\SFWnst{%i}' % pairs.stations.size + '\n')
     fh.write(r'\def\SFWnobs{%i}' % len(pairs) + '\n')

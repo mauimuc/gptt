@@ -6,6 +6,7 @@ __copyright__ = "Copyright (C) 2017 Stefan Mauerberger"
 __license__   = "GPLv3"
 
 import numpy as np
+from sys import stdout
 from matplotlib import pyplot as plt
 from matplotlib import animation
 from plotting import prepare_map, lllat, lllon, urlat, urlon
@@ -68,9 +69,14 @@ def animate(i):
 
     tpc_mu.set_array(mu_C[i,:])
     tpc_sd.set_array(sd_C[i,:])
-    print('Frame %i of %i' % (i+1, mu_C.shape[0]))
+    # Screen output; a very basic progress bar
+    p = int(100.*(i+1)/mu_C.shape[0]) # Progress
+    stdout.write('\r[' + p*'#' + (100-p)*'-' + '] %3i' % p + '%' )
+    if (i+1) == mu_C.shape[0]:
+        stdout.write('\n')
 
     return tpc_mu, tpc_sd
+
 
 
 anim = animation.FuncAnimation(fig, animate, save_count=0, \

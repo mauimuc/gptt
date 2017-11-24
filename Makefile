@@ -30,10 +30,10 @@ fig_discretization.pgf: ./src/fig_discretization.py ./src/plotting.py ./dat/pseu
 fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_path_coverage.py
 
-fig_kernel_pri.pgf: ./src/fig_kernel_pri.py ./src/example.py ./src/plotting.py
+fig_kernel_pri.pgf: ./src/fig_kernel_pri.py ./src/plotting.py ./par/example.ini
 	cd src; python fig_kernel_pri.py
 
-fig_correlation_pri.pgf: ./src/fig_correlation_pri.py ./src/example.py ./src/plotting.py
+fig_correlation_pri.pgf: ./src/fig_correlation_pri.py ./src/plotting.py ./par/example.ini
 	cd src; python fig_correlation_pri.py
 
 fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
