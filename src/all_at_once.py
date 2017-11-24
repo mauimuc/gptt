@@ -57,8 +57,10 @@ dset_mu = fh.create_dataset('mu', (2,) + mu_C.shape)
 dset_mu[0,:] = mu_C
 dset_sd = fh.create_dataset('sd', (2,) + mu_C.shape)
 dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
-fh.create_dataset('mu_D_pri', data=mu_D_pri)
 fh.create_dataset('cov_DD_pri', data=cov_DD_pri)
+# Store prior misfit
+dset_misfit = fh.create_dataset('misfit', (2, ))
+dset_misfit[0] = pairs.misfit(mu_C, cov_CC)
 
 
 # Correlations amongst data and model
@@ -82,8 +84,9 @@ cov_DD_pst = pairs.cov_TT(mu_C, cov_CC)
 # Store posterior mean and covariances
 dset_mu[1,:] = mu_C
 dset_sd[1,:] = np.sqrt(cov_CC.diagonal())
-fh.create_dataset('mu_D_pst', data=mu_D_pst)
 fh.create_dataset('cov_DD_pst', data=cov_DD_pst)
+# Store posterior misfit
+dset_misfit[1] = pairs.misfit(mu_C, cov_CC)
 
 # Close HDF5 file
 fh.close()

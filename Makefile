@@ -6,7 +6,7 @@ all: formulas.pdf presentation.pdf
 ./dat/pseudo_data.dat: ./src/reference.py
 	cd src; python reference.py
 
-./dat/all_at_once.hdf5: ./src/all_at_once.py ./dat/pseudo_data.dat ./src/example.py
+./dat/all_at_once.hdf5: ./src/all_at_once.py ./src/gptt.py ./dat/pseudo_data.dat ./par/example.ini
 	cd src; python all_at_once.py
 fig_all_at_once.pgf: ./dat/all_at_once.hdf5 ./src/fig_posterior.py
 	cd src; python fig_posterior.py ../dat/all_at_once.hdf5
@@ -42,8 +42,9 @@ fig_example.pgf: ./src/fig_posterior.py ./dat/example.hdf5
 fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/example.hdf5
 	cd src; python fig_correlation_pst.py
 
-#fig_misfit.pgf: ./src/fig_misfit.py ./dat/example.hdf5
-#	cd src; python fig_misfit.py
+.PHONY: misfit
+misfit: ./src/fig_misfit.py ./dat/example.hdf5 ./dat/example_ascending.hdf5 ./dat/example_descending.hdf5 ./dat/all_at_once.hdf5
+	cd src; python fig_misfit.py
 
 presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf animation.avi animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf
 	pdflatex presentation

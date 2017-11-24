@@ -9,28 +9,25 @@ __license__   = "GPLv3"
 
 import numpy as np
 from matplotlib import pyplot as plt
-from plotting import rcParams, prepare_map
 import h5py
 
-plt.rcParams.update(rcParams)
-
-# Prepare map
-fig = plt.figure(figsize=(6,1))
-
-from all_at_once import misfit
-misfit = np.sqrt(misfit)
-plt.plot((0,190), misfit, '.--')
-print misfit
 
 with h5py.File('../dat/example.hdf5', 'r') as fh:
-    misfit = np.sqrt(fh['misfit'])
-plt.plot(misfit)
-print misfit[[0,-1]]
+    misfit = fh['misfit'][:]
+plt.plot(np.sqrt(misfit))
 
-#with h5py.File('../dat/succession_sorted.hdf5', 'r') as fh:
-#    misfit = np.sqrt(fh['misfit'])
-#plt.plot(misfit)
-#print misfit[[0,-1]]
+with h5py.File('../dat/all_at_once.hdf5', 'r') as fh:
+    misfit = fh['misfit'][:]
+plt.plot(np.sqrt(misfit), label='all at once')
 
-plt.savefig('../fig_misfit.pgf')
+with h5py.File('../dat/example_descending.hdf5', 'r') as fh:
+    misfit = fh['misfit'][:]
+plt.plot(np.sqrt(misfit), label='descending')
+
+with h5py.File('../dat/example_ascending.hdf5', 'r') as fh:
+    misfit = fh['misfit'][:]
+plt.plot(np.sqrt(misfit), label='ascending')
+
+plt.legend()
+plt.show()
 

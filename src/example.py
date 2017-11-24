@@ -69,14 +69,16 @@ fh.create_dataset('stations', data=pairs.stations)
 # Store discretization
 fh.create_dataset('points', data=points)
 # Store prior covariance matrix
-fh.create_dataset('cov_CC_pri', data=cov_CC, dtype=np.float32)
+fh.create_dataset('cov_CC_pri', data=cov_CC)
 # Create datasets for mean, standard deviation and misfit
-dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
-dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape, dtype=np.float32)
-#dset_misfit = fh.create_dataset('misfit', (len(pairs) + 1, ), dtype=np.float32)
+dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape)
+dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape)
+dset_misfit = fh.create_dataset('misfit', (2, ))
 # Save prior mean and standard deviation
 dset_mu[0,:] = mu_C
 dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
+# Store prior misfit
+dset_misfit[0] = pairs.misfit(mu_C, cov_CC)
 
 # Successively consider evidence
 for i in range(len(pairs)):
@@ -101,6 +103,8 @@ for i in range(len(pairs)):
 
 # Save posterior covariance matrix
 fh.create_dataset('cov_CC_pst', data=cov_CC)
+# Store posterior misfit
+dset_misfit[1] = pairs.misfit(mu_C, cov_CC)
 # Close HDF5 file
 fh.close()
 
