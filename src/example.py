@@ -13,6 +13,7 @@ from gptt import dt_latlon, read_station_file, ListPairs, gauss_kernel
 from reference import dt_obs
 from ConfigParser import ConfigParser
 import h5py
+from random import shuffle
 
 # Read parameter file
 config = ConfigParser()
@@ -38,11 +39,13 @@ pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
 pairs = ListPairs(pseudo_data, all_stations)
 
 # XXX Clumsy
-if config.has_option('Observations', 'sort'):
-    if config.get('Observations', 'sort') == 'ascending':
+if config.has_option('Observations', 'succession'):
+    if config.get('Observations', 'succession') == 'ascending':
         pairs.sort(key=lambda p: p.central_angle)
-    elif config.get('Observations', 'sort') == 'descending':
+    elif config.get('Observations', 'succession') == 'descending':
         pairs.sort(key=lambda p: p.central_angle, reverse=True)
+    elif config.get('Observations', 'succession') == 'random':
+        shuffle(pairs)
     else:
         raise NotImplementedError
 
