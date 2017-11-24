@@ -11,11 +11,15 @@ all: formulas.pdf presentation.pdf
 fig_all_at_once.pgf: ./dat/all_at_once.hdf5 ./src/fig_posterior.py
 	cd src; python fig_posterior.py ../dat/all_at_once.hdf5
 
-formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_discretization.pgf fig_correlation_pri.pgf fig_example.pgf fig_all_at_once.pgf fig_succession_sorted.pgf fig_succession_reverse.pgf
+formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_discretization.pgf fig_correlation_pri.pgf fig_example.pgf fig_all_at_once.pgf fig_example_ascending.pgf fig_example_descending.pgf
 	pdflatex formulas
 
-def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat ./src/parameter.ini
-	cd src; python example.py
+def_example.tex ./dat/example.hdf5: ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat ./par/example.ini
+	cd src; python example.py ../par/example.ini
+./dat/example_ascending.hdf5: ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat ./par/example_ascending.ini
+	cd src; python example.py ../par/example_ascending.ini
+./dat/example_descending.hdf5: ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat ./par/example_descending.ini
+	cd src; python example.py ../par/example_descending.ini
 
 fig_reference_model.pgf: ./src/fig_reference_model.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_reference_model.py
@@ -47,14 +51,11 @@ presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf
 animation.avi animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py
 	cd src; python animation.py
 
-./dat/succession_sorted.hdf5 ./dat/succession_reverse.hdf5: ./src/succession_sorted.py ./dat/pseudo_data.dat ./src/example.py
-	cd src; python succession_sorted.py
+fig_example_ascending.pgf: ./dat/example_ascending.hdf5 ./src/fig_posterior.py
+	cd src; python fig_posterior.py ../dat/example_ascending.hdf5
 
-fig_succession_sorted.pgf: ./dat/succession_sorted.hdf5 ./src/fig_posterior.py
-	cd src; python fig_posterior.py ../dat/succession_sorted.hdf5
-
-fig_succession_reverse.pgf: ./dat/succession_reverse.hdf5 ./src/fig_posterior.py
-	cd src; python fig_posterior.py ../dat/succession_reverse.hdf5
+fig_example_descending.pgf: ./dat/example_descending.hdf5 ./src/fig_posterior.py
+	cd src; python fig_posterior.py ../dat/example_descending.hdf5
 
 
 clean:

@@ -8,14 +8,14 @@ __license__   = "GPLv3"
 ''' Calculate the Bayesian posterior considering data all at once. '''
 
 import numpy as np
-from gptt import f_mu_T, f_cov_TT, gauss_kernel, ListPairs, read_station_file
+from gptt import gauss_kernel, ListPairs, read_station_file
 from configparser import ConfigParser
 from reference import dt_obs
 import h5py
 
 # Read parameter file
 config = ConfigParser()
-with open('parameter.ini') as fh:
+with open('../par/example.ini') as fh:
     config.readfp(fh)
 
 # Kernel Parameters
@@ -50,8 +50,8 @@ fh.create_dataset('points', data=points)
 mu_C = np.full_like(points, mu, dtype=np.float)
 cov_CC = gauss_kernel(points.reshape(1,-1),points.reshape(-1,1), ell=ell, tau=tau)
 # Prior predictive mean and covariance
-mu_D_pri = f_mu_T(pairs, mu_C)
-cov_DD_pri = f_cov_TT(pairs, mu_C, cov_CC)
+mu_D_pri = pairs.mu_T(mu_C)
+cov_DD_pri = pairs.cov_TT(mu_C, cov_CC)
 # Store prior assumptions
 dset_mu = fh.create_dataset('mu', (2,) + mu_C.shape)
 dset_mu[0,:] = mu_C
@@ -76,8 +76,8 @@ mu_C += np.dot(M.T, np.linalg.solve(L, pairs.d - mu_D_pri))
 cov_CC -= np.dot(M.T, M)
 
 # Posterior mean and covariance
-mu_D_pst = f_mu_T(pairs, mu_C)
-cov_DD_pst = f_cov_TT(pairs, mu_C, cov_CC)
+mu_D_pst = pairs.mu_T(mu_C)
+cov_DD_pst = pairs.cov_TT(mu_C, cov_CC)
 
 # Store posterior mean and covariances
 dset_mu[1,:] = mu_C

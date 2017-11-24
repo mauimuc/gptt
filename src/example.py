@@ -7,6 +7,7 @@ __license__   = "GPLv3"
 
 ''' Example script of a synthetic test for Bayesian travel time tomography '''
 
+from sys import argv
 import numpy as np
 from gptt import dt_latlon, StationPair, read_station_file, ListPairs, gauss_kernel
 from scipy.integrate import simps
@@ -16,7 +17,7 @@ import h5py
 
 # Read parameter file
 config = ConfigParser()
-with open('parameter.ini') as fh:
+with open(argv[1]) as fh:
     config.readfp(fh)
 
 
@@ -42,6 +43,7 @@ if config.has_option('Observations', 'sort'):
         print 'ascending'
         pairs.sort(key=lambda p: p.central_angle)
     elif config.get('Observations', 'sort') == 'descending':
+        print 'descending'
         pairs.sort(key=lambda p: p.central_angle, reverse=True)
     else:
         raise NotImplementedError

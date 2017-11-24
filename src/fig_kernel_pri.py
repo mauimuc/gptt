@@ -20,7 +20,7 @@ plt.rcParams.update(rcParams)
 
 # Read parameter file
 config = ConfigParser()
-with open('parameter.ini') as fh:
+with open('../par/example.ini') as fh:
     config.readfp(fh)
 
 # Kernel Parameters
