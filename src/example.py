@@ -12,7 +12,7 @@ import numpy as np
 from gptt import dt_latlon, StationPair, read_station_file, ListPairs, gauss_kernel
 from scipy.integrate import simps
 from reference import dt_obs
-from configparser import ConfigParser
+from ConfigParser import ConfigParser
 import h5py
 
 # Read parameter file

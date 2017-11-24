@@ -13,7 +13,7 @@ from gptt import dt_latlon, gauss_kernel, read_station_file, ListPairs
 from reference import dt_obs
 from scipy.integrate import simps
 from plotting import rcParams, prepare_map
-from configparser import ConfigParser
+from ConfigParser import ConfigParser
 
 # Read parameter file
 config = ConfigParser()

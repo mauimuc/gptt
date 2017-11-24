@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon, gauss_kernel
 from plotting import rcParams, prepare_map
-from configparser import ConfigParser
+from ConfigParser import ConfigParser
 from reference import dt_obs
 from gptt import read_station_file, ListPairs
 

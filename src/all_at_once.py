@@ -9,7 +9,7 @@ __license__   = "GPLv3"
 
 import numpy as np
 from gptt import gauss_kernel, ListPairs, read_station_file
-from configparser import ConfigParser
+from ConfigParser import ConfigParser
 from reference import dt_obs
 import h5py
 
