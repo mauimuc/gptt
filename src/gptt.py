@@ -46,11 +46,11 @@ class ListPairs(list):
 
     def __init__(self, observations, all_stations):
         # Append station-pairs to list
-        for stnm1, stnm2, T_act, obs_err in observations:
+        for stnm1, stnm2, val, err in observations:
             st1, = all_stations[all_stations['stnm'] == stnm1]
             st2, = all_stations[all_stations['stnm'] == stnm2]
             # Append to list of station pairs
-            self.append(StationPair(st1=st1, st2=st2, d=T_act + obs_err))
+            self.append(StationPair(st1=st1, st2=st2, d=val, e=err))
         # Get minimum central angel
         min_ca = self.min_central_angle
         # Spacing; Determine how fine great circle segments are going to be sampled
@@ -67,8 +67,6 @@ class ListPairs(list):
             idx2 = station_names.index(p.st2['stnm'])
             n = int(p.central_angle/self.ds) # XXX Rounding errors
             p.indices = np.array( [idx1, ] + range(index, index+n-2) + [idx2, ] )
-            # XXX Where to appropriately set the standard deviation
-            p.error = 0.5
             # Increment index
             index += n-2
 
@@ -139,11 +137,11 @@ class ListPairs(list):
 
 
 class StationPair(object):
-    def __init__(self, st1, st2, d):
+    def __init__(self, st1, st2, d, e):
         self.st1 = st1
         self.st2 = st2
-        self.d = d
-        self.error = None # Standard deviation
+        self.d = d # Value observed
+        self.error = e # Error level; standard deviation
         self.indices = None # Discretization
         self.__spacing = None
 

@@ -113,7 +113,8 @@ if __name__ == '__main__':
         gcp = GCP(stations[i], stations[j]) # Great circle parametrization
         integrand = lambda t: r_E/c_act(gcp(t)) # The function to be integrated
         rec['tt'] = quad(integrand, 0, gcp.ca)[0] # Calculate travel time [s]
-        rec['err'] = np.random.normal(loc=0, scale=err_obs) # Draw an error [s]
+        rec['tt']+= np.random.normal(loc=0, scale=err_obs) # Draw an error [s]
+        rec['err'] = err_obs # TODO Consider individual errors e.g. 5%
         rec['stnm1'] = stations[i]['stnm'] # Store station name 1
         rec['stnm2'] = stations[j]['stnm'] # Store station name 2
 
