@@ -12,21 +12,25 @@ from matplotlib import pyplot as plt
 import h5py
 
 
-with h5py.File('../dat/example.hdf5', 'r') as fh:
+with h5py.File('../dat/misfit_all.hdf5', 'r') as fh:
     misfit = fh['misfit'][:]
-plt.plot(np.sqrt(misfit))
+plt.plot([0,19], np.sqrt(misfit), 'x--', label='all at once')
 
-with h5py.File('../dat/all_at_once.hdf5', 'r') as fh:
+with h5py.File('../dat/misfit_rnd.hdf5', 'r') as fh:
     misfit = fh['misfit'][:]
-plt.plot(np.sqrt(misfit), label='all at once')
+plt.plot(np.sqrt(misfit), 'o--', label='shuffle')
 
-with h5py.File('../dat/example_descending.hdf5', 'r') as fh:
+with h5py.File('../dat/misfit_rnd2.hdf5', 'r') as fh:
     misfit = fh['misfit'][:]
-plt.plot(np.sqrt(misfit), label='descending')
+plt.plot(np.sqrt(misfit), 'o--', label='shuffle')
 
-with h5py.File('../dat/example_ascending.hdf5', 'r') as fh:
+with h5py.File('../dat/misfit_dsc.hdf5', 'r') as fh:
     misfit = fh['misfit'][:]
-plt.plot(np.sqrt(misfit), label='ascending')
+plt.plot(np.sqrt(misfit), 'x--', label='descending')
+
+with h5py.File('../dat/misfit_asc.hdf5', 'r') as fh:
+    misfit = fh['misfit'][:]
+plt.plot(np.sqrt(misfit), 'x--', label='ascending')
 
 plt.legend()
 plt.show()

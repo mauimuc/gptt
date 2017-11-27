@@ -12,8 +12,11 @@ all: formulas.pdf presentation.pdf
 ./dat/%.hdf5: ./par/%.ini ./src/example.py ./src/gptt.py ./dat/pseudo_data.dat
 	cd src; python example.py ../$<
 
+# TODO
 ./dat/all_at_once.hdf5: ./src/all_at_once.py ./src/gptt.py ./dat/pseudo_data.dat ./par/example.ini
 	cd src; python all_at_once.py ../par/example.ini
+./dat/misfit_all.hdf5: ./src/all_at_once.py ./src/gptt.py ./dat/pseudo_data.dat ./par/misfit_all.ini
+	cd src; python all_at_once.py ../par/misfit_all.ini
 
 formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_discretization.pgf fig_correlation_pri.pgf fig_example.pgf fig_all_at_once.pgf fig_example_ascending.pgf fig_example_descending.pgf
 	pdflatex formulas
@@ -43,7 +46,7 @@ fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/e
 	cd src; python fig_correlation_pst.py
 
 .PHONY: misfit
-misfit: ./src/fig_misfit.py ./dat/example.hdf5 ./dat/example_ascending.hdf5 ./dat/example_descending.hdf5 ./dat/all_at_once.hdf5
+misfit: ./src/fig_misfit.py ./dat/misfit_all.hdf5 ./dat/misfit_asc.hdf5 ./dat/misfit_dsc.hdf5 ./dat/misfit_rnd.hdf5 ./dat/misfit_rnd2.hdf5
 	cd src; python fig_misfit.py
 
 presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf animation.avi animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf
