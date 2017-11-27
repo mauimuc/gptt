@@ -49,33 +49,42 @@ fh.create_dataset('points', data=points)
 # A priori mean and assumed covariance
 mu_C = np.full_like(points, mu, dtype=np.float)
 cov_CC = gauss_kernel(points.reshape(1,-1),points.reshape(-1,1), ell=ell, tau=tau)
-# Prior predictive mean and covariance
-mu_D_pri = pairs.mu_T(mu_C)
-cov_DD_pri = pairs.cov_TT(mu_C, cov_CC)
-# Store prior assumptions
-dset_mu = fh.create_dataset('mu', (2,) + mu_C.shape)
-dset_mu[0,:] = mu_C
-dset_sd = fh.create_dataset('sd', (2,) + mu_C.shape)
-dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
-fh.create_dataset('cov_DD_pri', data=cov_DD_pri)
-# Store prior misfit
-dset_misfit = fh.create_dataset('misfit', (2, ))
-dset_misfit[0] = pairs.misfit(mu_C, cov_CC)
+
+def chunk(sequence, chunksize):
+    l = len(sequence)
+    for ndx in range(0, l, chunksize):
+        yield sequence[ndx:min(ndx + chunksize, l)]
 
 
-# Correlations amongst data and model
-# TODO: Have cor_CD as a method of ListPairs
-cor_CD = np.empty( mu_C.shape + pairs.d.shape )
-for i in range(len(pairs)):
-    cor_CD[:,i] = pairs[i].cor_CT(mean=mu_C, cov=cov_CC)
+for obs in chunk(pairs, 1000):
+    # Prior predictive mean and covariance
+    mu_D_pri = obs.mu_T(mu_C)
+    cov_DD_pri = obs.cov_TT(mu_C, cov_CC)
 
-# Cholesky factorization
-# XXX SciPy cho_factor and cho_solve preform a little better
-L = np.linalg.cholesky(cov_DD_pri)
-M = np.linalg.solve(L, cor_CD.T)
-# Posterior mean an covariance
-mu_C += np.dot(M.T, np.linalg.solve(L, pairs.d - mu_D_pri))
-cov_CC -= np.dot(M.T, M)
+    # Store prior assumptions
+    dset_mu = fh.create_dataset('mu', (2,) + mu_C.shape)
+    dset_mu[0,:] = mu_C
+    dset_sd = fh.create_dataset('sd', (2,) + mu_C.shape)
+    dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
+    fh.create_dataset('cov_DD_pri', data=cov_DD_pri)
+    # Store prior misfit
+    dset_misfit = fh.create_dataset('misfit', (2, ))
+    dset_misfit[0] = obs.misfit(mu_C, cov_CC)
+
+
+    # Correlations amongst data and model
+    # TODO: Have cor_CD as a method of ListPairs
+    cor_CD = np.empty( mu_C.shape + obs.d.shape )
+    for i in range(len(obs)):
+        cor_CD[:,i] = obs[i].cor_CT(mean=mu_C, cov=cov_CC)
+
+    # Cholesky factorization
+    # XXX SciPy cho_factor and cho_solve preform a little better
+    L = np.linalg.cholesky(cov_DD_pri)
+    M = np.linalg.solve(L, cor_CD.T)
+    # Posterior mean an covariance
+    mu_C += np.dot(M.T, np.linalg.solve(L, obs.d - mu_D_pri))
+    cov_CC -= np.dot(M.T, M)
 
 # Posterior mean and covariance
 mu_D_pst = pairs.mu_T(mu_C)
