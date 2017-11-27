@@ -9,6 +9,7 @@ __license__   = "GPLv3"
 
 import numpy as np
 from scipy.integrate import simps
+from collections import Sequence
 
 r_E = 6371000.
 
@@ -42,15 +43,16 @@ def gauss_kernel(crd1, crd2, tau, ell):
     d = great_circle_distance(crd1, crd2)
     return tau**2*np.exp(-(d/ell)**2)
 
-class ListPairs(list):
+class ListPairs(Sequence):
 
     def __init__(self, observations, all_stations):
         # Append station-pairs to list
+        self._data = list()
         for stnm1, stnm2, T_act, obs_err in observations:
             st1, = all_stations[all_stations['stnm'] == stnm1]
             st2, = all_stations[all_stations['stnm'] == stnm2]
             # Append to list of station pairs
-            self.append(StationPair(st1=st1, st2=st2, d=T_act + obs_err))
+            self._data.append(StationPair(st1=st1, st2=st2, d=T_act + obs_err))
         # Get minimum central angel
         min_ca = self.min_central_angle
         # Spacing; Determine how fine great circle segments are going to be sampled
@@ -72,54 +74,61 @@ class ListPairs(list):
             # Increment index
             index += n-2
 
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, i):
+        return self._data[i]
+
     @property
     def min_central_angle(self):
-        return min([p.central_angle for p in self])
+        return min([p.central_angle for p in self._data])
 
     @property
     def stations(self):
         ''' Stations present in the data-set '''
-        dups = np.array( [p.st1 for p in self] + [p.st2 for p in self] )
+        dups = np.array( [p.st1 for p in self._data] + [p.st2 for p in self._data] )
         return np.unique(dups)
 
     @property
     def npts(self):
-        return np.concatenate( [p.indices for p in self] ).max() + 1
+        return np.concatenate( [p.indices for p in self._data] ).max() + 1
 
     @property
     def points(self):
         points = np.empty(self.npts, dtype=dt_latlon)
-        for p in self:
+        for p in self._data:
             points[p.indices] = p.great_circle_path
         return points
 
     @property
     def mean_station_spacing(self):
-        ca = [p.central_angle*r_E for p in self]
+        ca = [p.central_angle*r_E for p in self._data]
         return np.mean(ca)
 
     @property
     def d(self):
-        return np.array([p.d for p in self])
+        return np.array([p.d for p in self._data])
 
     def mu_T(self, mu_C):
         ''' Calculate mean travel time '''
         N = len(self)
         res = np.empty(N)
         for i in range(N):
-            res[i] = simps(r_E/mu_C[self[i].indices], dx=self[i].spacing)
+            pair = self._data[i]
+            res[i] = simps(r_E/mu_C[pair.indices], dx=pair.spacing)
         return res
 
     def cov_TT(self, mu_C, cov_CC):
         N = len(self)
         res = np.empty((N,N))
         for i in range(N):
-            ds_i = self[i].spacing
-            idx_i = self[i].indices
+            ds_i = self._data[i].spacing
+            idx_i = self._data[i].indices
             cor = -simps(cov_CC[:,idx_i]*r_E/mu_C[idx_i]**2, dx=ds_i, axis=-1)
             for j in range(i, N):
-                ds_j = self[j].spacing
-                idx_j = self[j].indices
+                ds_j = self._data[j].spacing
+                idx_j = self._data[j].indices
                 res[i,j] = -simps(cor[idx_j]*r_E/mu_C[idx_j]**2, dx=ds_j)
                 if i!=j:
                     res[j,i] = res[i,j]
