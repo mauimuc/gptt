@@ -78,7 +78,10 @@ class ListPairs(Sequence):
         return len(self._data)
 
     def __getitem__(self, i):
-        return self._data[i]
+        if isinstance(i, slice):
+            raise NotImplementedError
+        else:
+            return self._data[i]
 
     @property
     def min_central_angle(self):
