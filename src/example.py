@@ -16,7 +16,7 @@ import h5py
 from random import shuffle
 
 # Read parameter file
-config = ConfigParser()
+config = ConfigParser(defaults={'succession': 'native'})
 with open(argv[1]) as fh:
     config.readfp(fh)
 
@@ -38,24 +38,25 @@ pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
 # Observations
 pairs = ListPairs(pseudo_data, all_stations)
 
-# XXX Clumsy
-if config.has_option('Observations', 'succession'):
-    if config.get('Observations', 'succession') == 'ascending':
-        pairs.sort(key=lambda p: p.central_angle)
-    elif config.get('Observations', 'succession') == 'descending':
-        pairs.sort(key=lambda p: p.central_angle, reverse=True)
-    elif config.get('Observations', 'succession') == 'random':
-        shuffle(pairs)
-    else:
-        raise NotImplementedError
+# XXX Appears a little clumsy to me
+if config.get('Observations', 'succession') == 'native':
+    pass
+elif config.get('Observations', 'succession') == 'ascending':
+    pairs.sort(key=lambda p: p.central_angle)
+elif config.get('Observations', 'succession') == 'descending':
+    pairs.sort(key=lambda p: p.central_angle, reverse=True)
+elif config.get('Observations', 'succession') == 'random':
+    shuffle(pairs)
+else:
+    raise NotImplementedError
 
 
 # Sampling points
 points = pairs.points
 # TODO Add design points; e.g. corners of the plot
-from plotting import lllat, lllon, urlat, urlon
-grid = np.rec.fromarrays(np.mgrid[lllat:urlat:4j, lllon:urlon:4j], dtype=dt_latlon)
-points = np.concatenate( (pairs.points, grid.flatten()))
+#from plotting import lllat, lllon, urlat, urlon
+#grid = np.rec.fromarrays(np.mgrid[lllat:urlat:5j, lllon:urlon:5j], dtype=dt_latlon)
+#points = np.concatenate( (pairs.points, grid.flatten()))
 
 # A priori assumptions
 mu_C = np.full_like(points, mu, dtype=np.float) # The velocity models a priori mean
