@@ -13,7 +13,7 @@ all: formulas.pdf presentation.pdf
 	cd src; python example.py ../$<
 
 ./dat/all_at_once.hdf5: ./src/all_at_once.py ./src/gptt.py ./dat/pseudo_data.dat ./par/example.ini
-	cd src; python all_at_once.py
+	cd src; python all_at_once.py ../par/example.ini
 
 formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_discretization.pgf fig_correlation_pri.pgf fig_example.pgf fig_all_at_once.pgf fig_example_ascending.pgf fig_example_descending.pgf
 	pdflatex formulas

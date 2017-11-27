@@ -7,6 +7,7 @@ __license__   = "GPLv3"
 
 ''' Calculate the Bayesian posterior considering data all at once. '''
 
+from sys import argv
 import numpy as np
 from gptt import gauss_kernel, ListPairs, read_station_file
 from ConfigParser import ConfigParser
@@ -15,7 +16,7 @@ import h5py
 
 # Read parameter file
 config = ConfigParser()
-with open('../par/example.ini') as fh:
+with open(argv[1]) as fh:
     config.readfp(fh)
 
 # Kernel Parameters
@@ -36,7 +37,8 @@ pseudo_data = np.genfromtxt(data_file, dtype=dt_obs)
 pairs = ListPairs(pseudo_data, all_stations)
 
 # Open HDF5 file handle
-fh = h5py.File('../dat/all_at_once.hdf5', 'w')
+output_file = config.get('Output', 'filename')
+fh = h5py.File(output_file, 'w')
 
 # Store stations
 fh.create_dataset('stations', data=pairs.stations)
