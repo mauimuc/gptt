@@ -210,7 +210,7 @@
     \end{block}
 
     \begin{itemize}
-        \item The kernel spans function space (RKHS)
+        \item The kernel spans a function space (RKHS)
         \item Sort out functions incompatible with data
     \end{itemize}
 
@@ -269,10 +269,11 @@
 
 \begin{frame}
     \frametitle{Conclusions}
+    \framesubtitle{Preliminary results}
 
-    --- comparison of misfits ---
+\begin{columns}
+\column{.55\textwidth}%
 
-    Preliminary results
     \begin{itemize}
         \item Accounts for irregular data distributions
         \item Linearization performs well
@@ -284,6 +285,28 @@
         \item Succession order
     \end{itemize}
 
+\column[T]{.44\textwidth}
+    \vspace{-5mm}
+    \begin{tikzpicture}
+        \pgfplotstableread{./dat/misfit.dat}\misfit
+        \begin{semilogyaxis}[width=\textwidth, height=0.9\textheight,
+                 label={Data misfit}, xlabel={\# evidence},
+                 axis lines=left, legend cell align=left,
+                 tick label style={font=\scriptsize}, legend style={only marks, draw=none, font=\footnotesize},
+                 label style={font=\scriptsize}, log ticks with fixed point ]
+            \addplot [dashed, mark=*, blue , mark options={scale=0.5, solid}] table [x=evd, y=all] \misfit;
+            \addlegendentry{all at once}
+            \addplot [dashed, mark=*, red  , mark options={scale=0.5, solid}] table [x=evd, y=asc] \misfit;
+            \addlegendentry{ascending $\sphericalangle$}
+            \addplot [dashed, mark=*, green, mark options={scale=0.5, solid}] table [x=evd, y=dsc] \misfit;
+            \addlegendentry{descending $\sphericalangle$}
+            \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd1] \misfit;
+            \addlegendentry{shuffle}
+            \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd2] \misfit;
+        \end{semilogyaxis}
+    \end{tikzpicture}
+
+\end{columns}
 
 \end{frame}
 
@@ -309,8 +332,13 @@
         \end{itemize}
     \end{block}
 
-\column<2>[T]{.44\textwidth}
-\vspace{-6mm}
+\column[T]{.44\textwidth}
+    \only<1>{
+    \vspace{-10mm}
+    \includegraphics[height=0.95\textheight]{MultiFiltered_SA28-ARJ}
+    }
+    \only<2>{
+    \vspace{-6mm}
     \begin{center}
         Follow the project on GitHub
         \\[6mm]
@@ -319,6 +347,7 @@
         \small
         \href{https://github.com/mauimuc/gptt}{github.com/mauimuc/gptt}
     \end{center}
+    }
 \end{columns}
 
 \end{frame}

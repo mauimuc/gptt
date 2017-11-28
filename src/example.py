@@ -47,7 +47,6 @@ elif config.get('Observations', 'succession') == 'descending':
     pairs.sort(key=lambda p: p.central_angle, reverse=True)
 elif config.get('Observations', 'succession') == 'random':
     shuffle(pairs)
-    print 'shuffle', len(pairs )
 else:
     raise NotImplementedError
 
@@ -76,7 +75,10 @@ fh.create_dataset('cov_CC_pri', data=cov_CC)
 # Create datasets for mean, standard deviation and misfit
 dset_mu = fh.create_dataset('mu', (len(pairs) + 1, ) + mu_C.shape)
 dset_sd = fh.create_dataset('sd', (len(pairs) + 1, ) + mu_C.shape)
-dset_misfit = fh.create_dataset('misfit', (len(pairs)/10+1, ))
+increment = 10
+shp_misfit = (max(1, len(pairs)/increment) + 1, )
+dt_misfit = np.dtype( [('evd', np.int), ('val', float)] )
+dset_misfit = fh.create_dataset('misfit', shp_misfit, dtype=dt_misfit)
 # Save prior mean and standard deviation
 dset_mu[0,:] = mu_C
 dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
@@ -86,7 +88,7 @@ dset_sd[0,:] = np.sqrt(cov_CC.diagonal())
 for i in range(len(pairs)):
     # Misfit
     if i % 10 == 0:
-        dset_misfit[i/10] = pairs.misfit(mu_C, cov_CC)
+        dset_misfit[i/increment] = i, pairs.misfit(mu_C, cov_CC)
     # To be considered evidence
     pair = pairs[i]
     # Prior mean
@@ -112,7 +114,7 @@ stdout.write('\n')
 # Save posterior covariance matrix
 fh.create_dataset('cov_CC_pst', data=cov_CC)
 # Store posterior misfit
-dset_misfit[-1] = pairs.misfit(mu_C, cov_CC)
+dset_misfit[-1] = len(pairs), pairs.misfit(mu_C, cov_CC)
 # Close HDF5 file
 fh.close()
 

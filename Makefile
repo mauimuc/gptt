@@ -45,11 +45,10 @@ fig_%.pgf: ./dat/%.hdf5 ./src/fig_posterior.py
 fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/example.hdf5
 	cd src; python fig_correlation_pst.py
 
-.PHONY: misfit
-misfit: ./src/fig_misfit.py ./dat/misfit_all.hdf5 ./dat/misfit_asc.hdf5 ./dat/misfit_dsc.hdf5 ./dat/misfit_rnd.hdf5 ./dat/misfit_rnd2.hdf5
-	cd src; python fig_misfit.py
+./dat/misfit.dat: ./src/dat_misfit.py ./dat/misfit_all.hdf5 ./dat/misfit_asc.hdf5 ./dat/misfit_dsc.hdf5 ./dat/misfit_rnd.hdf5 ./dat/misfit_rnd2.hdf5
+	cd src; python dat_misfit.py
 
-presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf animation.avi animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf
+presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf animation.avi animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf ./dat/misfit.dat
 	pdflatex presentation
 
 animation.avi animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py
