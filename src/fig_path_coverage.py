@@ -41,7 +41,7 @@ for pair in pairs:
     if path.size == 2:
         continue
     m.plot(path['lon'], path['lat'], latlon=True, \
-           linewidth=0.5, color='g', alpha=0.5)
+           linewidth=0.5, color='g', alpha=0.35)
 
 plt.savefig('../fig_path_coverage.pgf', transparent=True)
 

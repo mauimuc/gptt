@@ -60,10 +60,10 @@ p = pair.great_circle_path[12]
 
 # Make a lat, lon grid round the middle point
 N = 100j
-lllat = p['lat'] - 0.5
-urlat = p['lat'] + 0.5
-lllon = p['lon'] - 1
-urlon = p['lon'] + 1
+lllat = p['lat'] - 1
+urlat = p['lat'] + 1
+lllon = p['lon'] - 1.5
+urlon = p['lon'] + 1.5
 grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon)
 
 # Calculate kernel at the middle point

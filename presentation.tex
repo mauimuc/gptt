@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169, t, 10pt]{beamer}
+\documentclass[aspectratio=169, t, 10pt, ignorenonframetext]{beamer}
 \usetheme{Boadilla}
 \beamertemplatenavigationsymbolsempty
 
@@ -31,47 +31,61 @@
               }
 \date[AGU~2017]{AGU Fall Meeting -- 13\textsuperscript{th} December 2017}
 
-\begin{document}
 \input{def_example}
+\begin{document}
 
 \frame[noframenumbering, plain]
     {\maketitle}
 
 \begin{frame}
-    \frametitle{Correlation-Based Bayesian Tomography}
-    \framesubtitle{A non-parametric approach (function space veiw)}
-
+    \frametitle{Travel Time Tomography}
+    \framesubtitle{~}%
+%
 \begin{columns}%
 \column{.55\textwidth}%
+%
+    \begin{itemize}
+        \item Bayesian inversion 
+        \item Correlation based 
+        \item Non parametric 
+    \end{itemize}
 
-    \begin{exampleblock}{Setting \& Simplifications}
+    \begin{exampleblock}{Synthetic test}
         \begin{itemize}
-            \item Proof of concept
+            \item Large scale anomalies as a reference model 
             \item Neglecting dispersion and refraction
-            \item Synthetic test
-            \item Reference model: Two large scale anomalies
-            \item Pseudo observations corrupted by normal noise
+            \item Station geometry borrowed from ScanArray
         \end{itemize}
-        \hfill {\Large $\leadsto$} Location dependent model uncertainties ~
     \end{exampleblock}
 
+    \begin{alertblock}{Infer reference model from travel time obs.}
+        Bayesian posterior distribution \\
+        \hfill {\Large $\leadsto$} Location dependent model uncertainties ~
+    \end{alertblock}
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \only<2>{\input{fig_reference_model.pgf}}
-    \only<3>{\input{fig_reference_model_cnt.pgf}}
+    \input{fig_reference_model.pgf}
 \end{columns}
 
 \end{frame}
 
+I am providing insight into travel time tomography from a correlation based point of view. 
+To carry on with a synthetic test a subset of the ScanArray is considered. 
+The reference model is composed of two large scale anomalies. 
+Synthetic travel times are generated from that reference model neglecting refraction and dispersion. 
+The objective of the talk is to recover the reference model from travel time measurements. 
+
+
 \begin{frame}
     \frametitle{Travel Time Observations}
-    \framesubtitle{a functional w.r.t.~the velocity model}
+    \framesubtitle{a non-linear functional w.r.t.~the velocity model}
 
 \begin{columns}
 \column{.55\textwidth}%
     \begin{equation}
-        d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
+        %d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
+        \mathrm T_{s,r}[v] = \int_C \frac 1{v(r)} \mathrm d r 
     \end{equation}
 
     \begin{description}[leftmargin=! ,labelwidth=1cm]
@@ -80,39 +94,39 @@
         \item [Source location]          $s$
         \item [Receiver position]        $r$
         \item [Velocity model]           $v$
-        \item [Measurement error]        $\varepsilon$
-        \item [Ray path]                 $C$ (great circle path)
+        %\item [Measurement error]        $\varepsilon$
+        \item [Ray path]                 $C$ 
     \end{description}
 
-    \onslide<3>{
     \begin{alertblock}{It is the velocity model what we are after}
     \begin{itemize}
         \item Travel times are putting an Integral-constraint on $v$
         \item Non-linearity is a major concern
     \end{itemize}
-    \end{alertblock}}
+    \end{alertblock}
 
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \only<1>{\input{fig_path_coverage.pgf}}
-    \only<2->{\input{fig_discretization.pgf}}
+    \only{\input{fig_path_coverage.pgf}}
     \small
     \begin{align}
         N_\text{stn} &= \SFWnst &
         & \leadsto &
         N_\text{obs} &= \SFWnobs
-        \\
-        \onslide<2->{
-            \delta\sphericalangle &\approx \SFWdeltaangle\,^\circ &
-            & \leadsto &
-            N_\text{grd} &= \SFWnpts
-        }
     \end{align}
 
 \end{columns}
 
 \end{frame}
+
+Travel times amongst station pairs are expressed in terms of an integral over the slowness along the ray path. 
+The velocity model and travel times are non-linearly related. 
+The so-called observational functional is putting an integral constraint on the underlying model. 
+Indeed, the integral equation gives a handle for the inversion, however, non-linearity is a challenge. 
+The full Bayesian posterior can hardy be worked out. 
+
+Pseudo observations ...
 
 
 \begin{frame}
@@ -277,14 +291,12 @@
 \column{.55\textwidth}%
 
     \begin{itemize}
-        \item Accounts for irregular data distributions
-        \item Linearization performs well
-        \item Realistic assessment of spatial uncertainties
+        \item Assessment of uncertainties
+        \item Account for non-linearity
         \item Computationally simple
-        \item All calculus in the function space view \\
-              No basis functions, no truncations at a certain degree
-        \item Memory intense
-        \item Succession order
+        \item Calculus in the function space view 
+        \item Effect of succession order
+        \item Memory intense discretization 
     \end{itemize}
 
 \column[T]{.44\textwidth}
@@ -294,7 +306,7 @@
         \begin{semilogyaxis}[width=\textwidth, height=0.9\textheight,
                  label={Data misfit}, xlabel={\# evidence},
                  axis lines=left, legend cell align=left,
-                 tick label style={font=\scriptsize}, legend style={only marks, draw=none, font=\footnotesize},
+                 tick label style={font=\tiny}, legend style={only marks, draw=none, font=\footnotesize},
                  label style={font=\scriptsize}, log ticks with fixed point ]
             \addplot [dashed, mark=*, blue , mark options={scale=0.5, solid}] table [x=evd, y=all] \misfit;
             \addlegendentry{all at once}
@@ -312,43 +324,40 @@
 
 \end{frame}
 
-\begin{frame}[c]
+\begin{frame}
     \frametitle{Outlook \& Next Steps }
     \framesubtitle{Potential future application}
 
 \begin{columns}
 \column{.55\textwidth}%
 
-
     \begin{block}{Surface Wave Tomography}
         \begin{itemize}
             \item Ambient noise records
             \item Model phase velocities $v(\omega)$
-            \item A frequency dependent kernel
+            \item Construct frequency dependent kernel
                 \begin{equation}
                     K(x,\omega; \acute x, \acute\omega) \overset{?}{=}
                     \tau(\bar \omega)^2 \exp\left\{ -\frac12 \frac{\|x - \acute u\|^2}{\ell(\bar \omega)^2}\right\}
                 \end{equation}
-                to account for dispersion
+                accounting for dispersion
             \item Estimation of hyper parameters
         \end{itemize}
     \end{block}
 
 \column[T]{.44\textwidth}
-    \only<1>{
-    \vspace{-10mm}
-    \includegraphics[height=0.95\textheight]{MultiFiltered_SA28-ARJ}
+    \centering 
+    \only<1>{\vspace{-10mm}
+        \includegraphics[height=0.95\textheight]{MultiFiltered_SA28-ARJ}
     }
     \only<2>{
-    \vspace{-6mm}
-    \begin{center}
+        ~\\[6mm]    
         Follow the project on GitHub
         \\[6mm]
         \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}}
         \\[6mm]
         \small
         \href{https://github.com/mauimuc/gptt}{github.com/mauimuc/gptt}
-    \end{center}
     }
 \end{columns}
 

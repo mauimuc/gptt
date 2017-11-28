@@ -24,7 +24,7 @@ formulas.pdf: formulas.tex fig_reference_model.pgf fig_path_coverage.pgf fig_dis
 def_example.tex: ./src/def_example.py ./par/example.ini
 	cd src; python def_example.py ../par/example.ini
 
-fig_reference_model.pgf fig_reference_model_cnt.pgf: ./src/fig_reference_model.py ./src/plotting.py ./dat/pseudo_data.dat
+fig_reference_model.pgf: ./src/fig_reference_model.py ./src/plotting.py ./src/reference.py
 	cd src; python fig_reference_model.py
 
 fig_discretization.pgf: ./src/fig_discretization.py ./src/plotting.py ./dat/pseudo_data.dat
@@ -48,7 +48,7 @@ fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/e
 ./dat/misfit.dat: ./src/dat_misfit.py ./dat/misfit_all.hdf5 ./dat/misfit_asc.hdf5 ./dat/misfit_dsc.hdf5 ./dat/misfit_rnd.hdf5 ./dat/misfit_rnd2.hdf5
 	cd src; python dat_misfit.py
 
-presentation.pdf: presentation.tex fig_reference_model.pgf fig_reference_model_cnt.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf fig_discretization.pgf def_example.tex animation.avi animation_pst.png fig_correlation_pst.pgf fig_kernel_pst.pgf ./dat/misfit.dat
+presentation.pdf: presentation.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf def_example.tex animation.avi animation_pst.png fig_correlation_pst.pgf ./dat/misfit.dat
 	pdflatex presentation
 
 animation.avi animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py

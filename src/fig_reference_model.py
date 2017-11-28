@@ -37,7 +37,7 @@ ax_cbr = fig.add_axes( (bbox.x0, bbox.y0 - 0.06, bbox.width, 0.04) )
 
 
 # Plot station locations
-m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True, zorder=1)
+m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True, zorder=2)
 
 
 # Make a lat, lon grid with extent of the map
@@ -55,7 +55,6 @@ cbar.solids.set_edgecolor("face")
 plt.savefig('../fig_reference_model.pgf', transparent=True)
 
 # Contour lines
-cnt = m.contour(grid['lon'], grid['lat'], c, levels=c_act.levels(20), latlon=True, colors='k', linewidths=0.5)
+#cnt = m.contour(grid['lon'], grid['lat'], c, levels=c_act.levels(20), latlon=True, colors='k', linewidths=0.5)
 
-plt.savefig('../fig_reference_model_cnt.pgf', transparent=True)
 
