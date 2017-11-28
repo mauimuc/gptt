@@ -52,8 +52,10 @@ cbar = plt.colorbar(ims, cax=ax_cbr, orientation='horizontal')
 cbar.set_label(r'$^m/_s$')
 cbar.solids.set_edgecolor("face")
 
+plt.savefig('../fig_reference_model.pgf', transparent=True)
+
 # Contour lines
 cnt = m.contour(grid['lon'], grid['lat'], c, levels=c_act.levels(20), latlon=True, colors='k', linewidths=0.5)
 
-plt.savefig('../fig_reference_model.pgf', transparent=True)
+plt.savefig('../fig_reference_model_cnt.pgf', transparent=True)
 
