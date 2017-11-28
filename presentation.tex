@@ -47,8 +47,8 @@
     \begin{exampleblock}{Setting \& Simplifications}
         \begin{itemize}
             \item Proof of concept
-            \item Synthetic test
             \item Neglecting dispersion and refraction
+            \item Synthetic test
             \item Reference model: Two large scale anomalies
             \item Pseudo observations corrupted by normal noise
         \end{itemize}
@@ -58,8 +58,8 @@
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \only<1>{\input{fig_reference_model.pgf}}
-    \only<2>{\input{fig_reference_model_cnt.pgf}}
+    \only<2>{\input{fig_reference_model.pgf}}
+    \only<3>{\input{fig_reference_model_cnt.pgf}}
 \end{columns}
 
 \end{frame}
@@ -73,7 +73,7 @@
     \begin{equation}
         d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
     \end{equation}
-    @Matthias: This is a Radon transformation, am I right?
+
     \begin{description}[leftmargin=! ,labelwidth=1cm]
         \item [Measured value]           $d$
         \item [Observational functional] $\mathrm T_{s,r}[\cdot]$
@@ -81,28 +81,29 @@
         \item [Receiver position]        $r$
         \item [Velocity model]           $v$
         \item [Measurement error]        $\varepsilon$
-        \item [Ray path]                 $C$
+        \item [Ray path]                 $C$ (great circle path)
     \end{description}
 
+    \onslide<3>{
     \begin{alertblock}{It is the velocity model what we are after}
     \begin{itemize}
         \item Travel times are putting an Integral-constraint on $v$
         \item Non-linearity is a major concern
     \end{itemize}
-    \end{alertblock}
+    \end{alertblock}}
 
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
     \only<1>{\input{fig_path_coverage.pgf}}
-    \only<2>{\input{fig_discretization.pgf}}
+    \only<2->{\input{fig_discretization.pgf}}
     \small
     \begin{align}
         N_\text{stn} &= \SFWnst &
         & \leadsto &
         N_\text{obs} &= \SFWnobs
         \\
-        \onslide<2>{
+        \onslide<2->{
             \delta\sphericalangle &\approx \SFWdeltaangle\,^\circ &
             & \leadsto &
             N_\text{grd} &= \SFWnpts
