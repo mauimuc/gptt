@@ -1,0 +1,34 @@
+\documentclass[beamer=true]{standalone}
+\usepackage{pgfplots}
+\input{def_example}
+%
+\begin{document}
+\begin{tikzpicture}
+    \pgfplotstableread{./dat/misfit.dat}\misfit
+    \pgfplotsset{axis lines=left, tick label style={font=\tiny}, log ticks with fixed point}
+    \begin{semilogyaxis}[width=\textwidth, height=\textheight,
+             ylabel={Data misfit}, xlabel={\# evidence}, ylabel near ticks,
+             legend cell align=left,  xlabel near ticks,
+             legend style={only marks, draw=none, font=\footnotesize,
+             at={(0,0)}, anchor=south west },
+             label style={font=\scriptsize}, name=big ]
+        \addplot [dashed, mark=*, blue , mark options={scale=0.5, solid}] table [x=evd, y=all] \misfit;
+        \addlegendentry{all at once}
+        \addplot [dashed, mark=*, red  , mark options={scale=0.5, solid}] table [x=evd, y=asc] \misfit;
+        \addlegendentry{ascending $\sphericalangle$}
+        \addplot [dashed, mark=*, green, mark options={scale=0.5, solid}] table [x=evd, y=dsc] \misfit;
+        \addlegendentry{descending $\sphericalangle$}
+        \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd1] \misfit;
+        \addlegendentry{shuffle}
+        \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd2] \misfit;
+    \end{semilogyaxis}
+    \begin{axis}[at=(big.north east), anchor=north east, width=0.5\textwidth, height=0.5\textwidth,
+                 xmin={\SFWnobs-14}, xmax={\SFWnobs+3}]
+        \addplot [dashed, mark=*, red  , mark options={scale=0.5, solid}] table [x=evd, y=asc] \misfit;
+        \addplot [dashed, mark=*, green, mark options={scale=0.5, solid}] table [x=evd, y=dsc] \misfit;
+        \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd1] \misfit;
+        \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd2] \misfit;
+    \end{axis}
+\end{tikzpicture}
+\end{document}
+
