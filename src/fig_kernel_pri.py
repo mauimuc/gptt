@@ -77,6 +77,7 @@ pcol = m.pcolormesh(lon, lat, K, latlon=True, cmap='PuOr', rasterized=True, \
                     vmin=-vmax, vmax=vmax, zorder=1)
 # Make colorbar
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
+cbar.set_label(r'$m^2 s^{-2}$')
 cbar.solids.set_edgecolor("face")
 
 plt.savefig('../fig_kernel_pri.pgf')

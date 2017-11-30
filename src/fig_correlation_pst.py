@@ -50,7 +50,7 @@ m.scatter(stations['lon'], stations['lat'], lw=0, color='g', latlon=True)
 # Find stations which are the furtherest apart
 pair = max(pairs, key=lambda pair: pair.central_angle)
 # Parametrization of the great circle path
-pt12 = pair.great_circle_path
+path = pair.great_circle_path
 
 
 fh = h5py.File('../dat/example.hdf5', 'r')
@@ -58,6 +58,15 @@ fh = h5py.File('../dat/example.hdf5', 'r')
 points = fh['points']
 x, y = m(points['lon'], points['lat'])
 cov_CC = fh['cov_CC_pst'][:,:]
+
+# Highlight parametrization of the great circle segment
+m.plot(path['lon'], path['lat'], latlon=True, lw=0.5, color='g')
+m.scatter(path['lon'][1:-1], path['lat'][1:-1], latlon=True, s=1, marker='.', color='g')
+xr, yr = m(path[-1]['lon'], path[-1]['lat'])
+xs, ys = m(path[ 0]['lon'], path[ 0]['lat'])
+ax_map.text(xr, yr, 'r', fontsize=12, horizontalalignment='center', verticalalignment='center')
+ax_map.text(xs, ys, 's', fontsize=12, horizontalalignment='center', verticalalignment='center')
+
 
 
 K = cov_CC[pair.indices,:]
@@ -83,6 +92,7 @@ pcol = ax_map.tripcolor(x, y, cor_TC, cmap='PuOr', vmin=-vmax, vmax=vmax, raster
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 #cbar.set_ticks(np.linspace(-vmax, vmax, 7)[1:-1].round(3))
 cbar.solids.set_edgecolor("face")
+cbar.set_label('$[m]$')
 
 
 plt.savefig('../fig_correlation_pst.pgf')

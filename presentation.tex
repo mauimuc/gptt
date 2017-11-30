@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169, t, 10pt, ignorenonframetext]{beamer}
+\documentclass[aspectratio=169, t, 10pt, ]{beamer}
 \usetheme{Boadilla}
 \beamertemplatenavigationsymbolsempty
 
@@ -19,7 +19,7 @@
 \newcommand{\Identity}{\mathbb{I}}
 
 \title[Correlation based travel time inversion]{Bayesian Travel Time Inversion adopting Gaussian Process Regression}
-\subtitle{-- with the focus on uncertainty analysis --}
+\subtitle{-- with a focus on uncertainty analysis --}
 \author[\tt mauerber@uni-potsdam.de]{Stefan Mauerberger \and Matthias Holschneider}
 \institute[Math@UP]{University Potsdam, Institute of Mathematics}
 \titlegraphic{%\vspace{-1cm}
@@ -37,6 +37,8 @@
 \frame[noframenumbering, plain]
     {\maketitle}
 
+~
+
 \begin{frame}
     \frametitle{Travel Time Tomography}
     \framesubtitle{~}%
@@ -45,14 +47,14 @@
 \column{.55\textwidth}%
 %
     \begin{itemize}
-        \item Bayesian inversion 
-        \item Correlation based 
-        \item Non parametric 
+        \item Bayesian inversion
+        \item Correlation based
+        \item Non parametric
     \end{itemize}
 
     \begin{exampleblock}{Synthetic test}
         \begin{itemize}
-            \item Large scale anomalies as a reference model 
+            \item Large scale anomalies as a reference model
             \item Neglecting dispersion and refraction
             \item Station geometry borrowed from ScanArray
         \end{itemize}
@@ -70,11 +72,18 @@
 
 \end{frame}
 
-I am providing insight into travel time tomography from a correlation based point of view. 
-To carry on with a synthetic test a subset of the ScanArray is considered. 
-The reference model is composed of two large scale anomalies. 
-Synthetic travel times are generated from that reference model neglecting refraction and dispersion. 
-The objective of the talk is to recover the reference model from travel time measurements. 
+I am providing new insight into travel time tomography from a correlation based point of view.
+\\
+The objective of my talk is to retrieve the full Bayesian posterior of the velocity model.
+\\[2mm]
+
+To carry out a synthetic test a subset of $\SFWnst$ stations of the ScanArray is considered.
+\\
+The reference model is composed of two large scale anomalies.
+\\
+Travel times are generated from that reference model neglecting refraction and dispersion.
+\\
+The aim of the example is to recover the reference model.
 
 
 \begin{frame}
@@ -84,18 +93,15 @@ The objective of the talk is to recover the reference model from travel time mea
 \begin{columns}
 \column{.55\textwidth}%
     \begin{equation}
-        %d = \mathrm T_{s,r}[v] + \varepsilon = \int_C \frac 1{v(r)} \mathrm d r + \varepsilon
-        \mathrm T_{s,r}[v] = \int_C \frac 1{v(r)} \mathrm d r 
+        \mathrm T_C[v] = \int_C \frac 1{v(r)} \mathrm d r
     \end{equation}
 
     \begin{description}[leftmargin=! ,labelwidth=1cm]
-        \item [Measured value]           $d$
-        \item [Observational functional] $\mathrm T_{s,r}[\cdot]$
+        \item [Observational functional] $\mathrm T_C[\,\cdot\,]$
+        \item [Ray path]                 $C_{s,r}[\,\cdot\,]$
         \item [Source location]          $s$
         \item [Receiver position]        $r$
         \item [Velocity model]           $v$
-        %\item [Measurement error]        $\varepsilon$
-        \item [Ray path]                 $C$ 
     \end{description}
 
     \begin{alertblock}{It is the velocity model what we are after}
@@ -120,13 +126,19 @@ The objective of the talk is to recover the reference model from travel time mea
 
 \end{frame}
 
-Travel times amongst station pairs are expressed in terms of an integral over the slowness along the ray path. 
-The velocity model and travel times are non-linearly related. 
-The so-called observational functional is putting an integral constraint on the underlying model. 
-Indeed, the integral equation gives a handle for the inversion, however, non-linearity is a challenge. 
-The full Bayesian posterior can hardy be worked out. 
+Travel times are expressed in terms of an integral over the slowness along the ray path.
+\\
+The observational functional is putting an integral constraint on the velocity model.
+\\
+However, the non-linear relation of travel times and velocity model is a challenge.
+\\[2mm]
 
-Pseudo observations ...
+In the example, travel times are calculated for all station pairs, totaling to a $\SFWnobs$ records.
+\\
+Measurement noise is simulated by drawing from a normal distribution.
+\\[2mm]
+
+Before going ahead with non-linearity lets have a look at the a\,priori assumptions.
 
 
 \begin{frame}
@@ -135,7 +147,7 @@ Pseudo observations ...
 
 \begin{columns}
 \column{.55\textwidth}%
-    \begin{block}{Model $v(x)$ a Gaussian Random Field}
+    \begin{block}{Assume the model a Gaussian Random Field}
     \begin{equation}
         v \to V \sim \GP{\mu_V}{K_V}
     \end{equation}
@@ -153,10 +165,11 @@ Pseudo observations ...
     \begin{description}[leftmargin=! ,labelwidth=6cm]
         \item [Great circle distance] $d(x,y)$
         \item [Standard deviation]   $\tau = \SFWtau \, \frac ms$
-        \item [Characteristic lenth]  $\ell = \SFWell \, m$
+        \item [Characteristic length]  $\ell = \SFWell \, m$
     \end{description}
 
 \column[T]{.44\textwidth}
+    \centering
     \vspace{-10mm}
     \input{fig_kernel_pri.pgf}
 
@@ -164,15 +177,33 @@ Pseudo observations ...
 
 \end{frame}
 
+To express our ignorance, the a\,priori velocity model is assumed a Gaussian random field.
+\\
+It is fully determined by its mean function and covariance function.
+\\[2mm]
+
+For the example, a constant prior mean of $\SFWmuCpri \, \frac ms$ is used.
+\\
+The chosen covariance is inspired by the squared exponential kernel.
+\\
+The characteristic length is $\SFWell \, m$ and the deviation from the mean is $\SFWtau \, \frac ms$.
+\\[2mm]
+
+On the right, the covariance is shown.
+\\
+The further two points are apart the less correlated they are.
+\\
+In turn, close by points are likely to share similar velocities.
+
 
 \begin{frame}
     \frametitle{Linearization}
-    \framesubtitle{Gaussianity is only preserved under linear maps}
+    \framesubtitle{Gaussianity is preserved under linear maps}
 
 \begin{columns}
 \column{.55\textwidth}%
     \begin{equation}
-        \mathrm T_{s,r}[V] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \mathrm d r
+        \mathrm T_C[V] \approx \int_C \frac 1{\mu_V(r)} - \frac{V(r)}{\mu_V(r)^2} \, \mathrm d r
     \end{equation}
     \begin{description}[leftmargin=!, labelwidth=1cm]
         \item [Taylor expansion] 1\textsuperscript{st} order
@@ -180,30 +211,40 @@ Pseudo observations ...
     \end{description}
     \medskip
 
-    \begin{block}{Approximated correlations}
+    \begin{block}{Approximated correlation}
     \begin{equation}
-        \Cov{V}{\mathrm T_{s,r}[V]\,} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \mathrm d r
+        \Cov{V}{\mathrm T_C[V]\,} \approx -\int_C \frac {K_V(\cdot,r)}{\mu_V(r)^2} \, \mathrm d r
     \end{equation}
     \end{block}
 
-    \begin{block}{Approximated covariance}
+    \begin{block}{Approximated co-variance}
     \setlength\abovedisplayskip{0pt}
     \begin{equation}
-        \Cov{\mathrm T_{s,r}[V]}{\mathrm T_{\acute s, \acute r}[V]\,} \approx  \int_C \int_{\acute C} \frac{K_V(r,\acute r)}{\mu_V(r)^2\mu_V(\acute r)^2} \mathrm d r \mathrm d \acute r
+        \Cov{\mathrm T_C[V]}{\mathrm T_{C'}[V]\,} \approx  \int_C \int_{C'} \frac{K_V(r,r')}{\mu_V(r)^2\mu_V(r')^2} \, \mathrm d r \, \mathrm d r'
     \end{equation}
     \end{block}
 
 \column[T]{.44\textwidth}
+    \centering
     \vspace{-10mm}
-    \input{fig_correlation_pri.pgf}%
-    \vspace{-2mm}
-    \begin{center}%
-    \small Correlation of $V(x)$ with $T_{s,r}[V]$ kept fix
-    \end{center}
+    \input{fig_correlation_pri.pgf}
+    \\ \scriptsize
+    ~~ Correlation of $V(x)$ with $T_C[V]$ kept fix
 
 \end{columns}
 
 \end{frame}
+
+In case of non-linearities, it is not feasible to calculate the full Bayesian posterior.
+\\
+To preserve Gaussianity a Taylor expansion around the prior mean function is preformed.
+\\
+The linearization turns correlations and co-variances into explicit formulas.
+\\[2mm]
+
+The figure on the right shows what is learned about the medium from a single measurement.
+\\
+In other words: If we consider the travel time for a certain path, the intensity of the color describes its influence on the model.
 
 
 \begin{frame}
@@ -215,13 +256,13 @@ Pseudo observations ...
 
     \begin{block}{Stochastic data model}
         \begin{equation}
-            D = \mathrm T_{s,r}[V] + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
+            D = \mathrm T_C[V] + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
         \end{equation}
         \begin{description}[labelwidth=25mm]
             \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2}$
             \item [Uncertainty]        $\sigma_\varepsilon = \SFWepsilon\,s$
-            \item [Prior travel times] $\mu_D = \Mean{\mathrm T_{s,r}[\mu_V]\,}$
-            \item [Covariance matrix]  $\Sigma_{DD} = \Cov{\mathrm T}{\mathrm T}  + \Identity \sigma_\varepsilon^2$
+            \item [Prior travel times] $\mu_D = \Mean{\mathrm T_C[\mu_V]\,}$
+            \item [Covariance matrix]  $\Sigma_{DD} = \Cov{\mathrm T_C}{\mathrm T_{C'}} + \Identity \sigma_\varepsilon^2$
         \end{description}
     \end{block}
 
@@ -254,6 +295,26 @@ Pseudo observations ...
 
 \end{frame}
 
+A stochastic data model accounting for normal noise is chosen.
+\\
+Travel times are assumed being accurate at about $\SFWepsilon\,s$.
+\\[2mm]
+
+The posterior distribution is given by conditional mean and covariance.
+\\
+The basic grasp is to narrow down the function space to only those functions that are in accordance with the data.
+\\[2mm]
+
+To accommodate non-linearity I pursue with a successive strategy similar to a Kalman filter.
+\\
+The overall idea is to only incorporate a single evidence at a time.
+\\
+The linearization is performed at each step, again and again.
+\\
+Hereby the posterior mean improves gradually.
+\\
+The closer the point of expansion to reality the better the Taylor expansion performs.
+\\[2mm]
 
 \begin{frame}
     \frametitle{Successive Approach}
@@ -262,21 +323,41 @@ Pseudo observations ...
     \end{center}
 \end{frame}
 
+To illustrate the idea, I got a little video for you.
+\\
+The left hand panel illustrates how the conditional mean develops.
+\\
+Contour lines are for comparison with the reference model.
+\\
+On the right, the evolution of the conditional standard deviation is shown.
+\\[2mm]
+
+The path by path construction of the posterior distribution can nicely be seen.
+\\
+Both anomalies are captured.
+\\
+Gain confidence at areas of dense ray coverage.
+
 
 \begin{frame}
-    \frametitle{Posterior Correlation Pattern}
-    \framesubtitle{\dots }
+    \frametitle{Conclusions \phantom{I}I/II}
+    \framesubtitle{Assessment of Uncertainties}
 
 \begin{columns}
 \column{.55\textwidth}%
+
     \begin{itemize}
-        \item Analogy with sensitivity kernel
+        \item Anomalies are captured
+        \item Variance reduction $\Delta\sigma = \SFWsdred$
+        \item Measurement accuracy is dominant factor
+        \item Analogy with sensitivity kernels
+        \item Posterior as superposition
     \end{itemize}
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \only<1>{\input{fig_correlation_pri.pgf}}
-    \only<2>{\input{fig_correlation_pst.pgf}}
+    \only<1>{\input{fig_correlation_pst.pgf}}
+    %\only<2>{\input{fig_correlation_pri.pgf}}
 
 \end{columns}
 
@@ -284,42 +365,28 @@ Pseudo observations ...
 
 
 \begin{frame}
-    \frametitle{Conclusions}
-    \framesubtitle{Preliminary results}
+    \frametitle{Conclusions II/II}
+    \framesubtitle{Data Misfit }
 
 \begin{columns}
 \column{.55\textwidth}%
-
     \begin{itemize}
-        \item Assessment of uncertainties
-        \item Account for non-linearity
-        \item Computationally simple
-        \item Calculus in the function space view 
+        \item Data misfit
+            \begin{equation}
+                \phi = (d-\mu_D)^T \Sigma_{DD}^{-1} (d-\mu_D)
+            \end{equation}
+        \item Calculus in the function space view
         \item Effect of succession order
-        \item Memory intense discretization 
+        \item Memory intense discretization
     \end{itemize}
 
-\column[T]{.44\textwidth}
-    \vspace{-5mm}
-    \begin{tikzpicture}
-        \pgfplotstableread{./dat/misfit.dat}\misfit
-        \begin{semilogyaxis}[width=\textwidth, height=0.9\textheight,
-                 label={Data misfit}, xlabel={\# evidence},
-                 axis lines=left, legend cell align=left,
-                 tick label style={font=\tiny}, legend style={only marks, draw=none, font=\footnotesize},
-                 label style={font=\scriptsize}, log ticks with fixed point ]
-            \addplot [dashed, mark=*, blue , mark options={scale=0.5, solid}] table [x=evd, y=all] \misfit;
-            \addlegendentry{all at once}
-            \addplot [dashed, mark=*, red  , mark options={scale=0.5, solid}] table [x=evd, y=asc] \misfit;
-            \addlegendentry{ascending $\sphericalangle$}
-            \addplot [dashed, mark=*, green, mark options={scale=0.5, solid}] table [x=evd, y=dsc] \misfit;
-            \addlegendentry{descending $\sphericalangle$}
-            \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd1] \misfit;
-            \addlegendentry{shuffle}
-            \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd2] \misfit;
-        \end{semilogyaxis}
-    \end{tikzpicture}
+    \begin{exampleblock}{Bayesian Posterior Distribution}
+        Accommodates non-linearity
+    \end{exampleblock}
 
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_misfit}
 \end{columns}
 
 \end{frame}
@@ -331,27 +398,33 @@ Pseudo observations ...
 \begin{columns}
 \column{.55\textwidth}%
 
+    \begin{itemize}
+        \item Poisson type kernel
+        \item Estimation of hyper parameters
+        \item Adaptive grid to facilitate refraction
+    \end{itemize}
+
     \begin{block}{Surface Wave Tomography}
         \begin{itemize}
-            \item Ambient noise records
             \item Model phase velocities $v(\omega)$
-            \item Construct frequency dependent kernel
+            \item Use ambient noise records
+            \item Frequency dependent kernel
                 \begin{equation}
-                    K(x,\omega; \acute x, \acute\omega) \overset{?}{=}
-                    \tau(\bar \omega)^2 \exp\left\{ -\frac12 \frac{\|x - \acute u\|^2}{\ell(\bar \omega)^2}\right\}
+                    K(x,\omega; x', \omega') = \, ???
                 \end{equation}
                 accounting for dispersion
-            \item Estimation of hyper parameters
         \end{itemize}
     \end{block}
 
 \column[T]{.44\textwidth}
-    \centering 
-    \only<1>{\vspace{-10mm}
-        \includegraphics[height=0.95\textheight]{MultiFiltered_SA28-ARJ}
+    \centering
+    \only<1>{\vspace{-12mm}
+        \includegraphics[height=0.9\textheight]{MultiFiltered_SA28-ARJ}
+        \\
+        \tiny Multi-filtered correlogram by courtesy of A.~Mauerberger
     }
     \only<2>{
-        ~\\[6mm]    
+        \vspace{2mm}
         Follow the project on GitHub
         \\[6mm]
         \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}}
@@ -362,5 +435,25 @@ Pseudo observations ...
 \end{columns}
 
 \end{frame}
+
+For spherical geometries the usage of a Poisson type kernel is natural.
+\\
+A maximum likelihood estimate appears adequate to guess prior mean and error level.
+\\
+However, the characteristic length may not.
+\\[2mm]
+
+Modeling phase velocities is a potential future application.
+\\
+Surface waves are showing strong dispersion, clearly visible in the correlogram on the right.
+\\
+To model phase velocities a frequency dependent kernel is required.
+\\
+A simple departure is a locally stationary kernel.
+\\
+Both characteristic length and variance are assumed to depend on the centroid and/or lag frequency.
+\\[2mm]
+
+Thanks for your attention; Looking forward to your questions.
 
 \end{document}

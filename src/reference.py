@@ -89,7 +89,7 @@ class GCP(object):
         return res
 
 # Observational error
-err_obs = 0.5 # Standard deviation [s]
+err_obs = 0.25 # Standard deviation [s]
 
 # Structured array dtype to store pseudo records
 dt_obs = np.dtype( [('stnm1', 'S5'), ('stnm2', 'S5'), ('tt', np.float32), ('err', np.float32)] )

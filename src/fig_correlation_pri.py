@@ -91,6 +91,7 @@ pcol = m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='PuOr', rasterized=True,
 # Make colorbar
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 cbar.solids.set_edgecolor("face")
+cbar.set_label('$[m]$')
 
 plt.savefig('../fig_correlation_pri.pgf')
 
