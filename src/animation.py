@@ -13,6 +13,7 @@ from plotting import prepare_map, lllat, lllon, urlat, urlon
 from reference import c_act, dt_latlon
 import h5py
 
+dpi=200
 
 fh = h5py.File('../dat/example.hdf5', 'r')
 
@@ -62,7 +63,7 @@ cbar.set_ticks(range(vmin_sd, vmax_sd, 5))
 m.scatter(stations['lon'], stations['lat'], latlon=True, lw=0, color='g')
 
 # First frame; Necessary for LaTeX beamer
-plt.savefig('../animation_pri.png', dpi=150)
+plt.savefig('../animation_pri.png', dpi=dpi)
 
 def animate(i):
     global mu_C, cov_CC
@@ -78,15 +79,18 @@ def animate(i):
     return tpc_mu, tpc_sd
 
 
+frames = mu_C.shape[0]
+duration = 40. # s
+interval = 1000.*duration/frames # ms
 
 anim = animation.FuncAnimation(fig, animate, save_count=0, \
-                               frames=mu_C.shape[0], interval=100, blit=False)
+                               frames=frames, interval=interval, blit=False)
 
 # Save video
-anim.save('../animation.avi', dpi=150, extra_args=['-vcodec', 'msmpeg4v2'])
+anim.save('../animation.avi', dpi=dpi, extra_args=['-vcodec', 'msmpeg4v2'])
 
 # Last frame; Necessary for LaTeX beamer
-plt.savefig('../animation_pst.png', dpi=150)
+plt.savefig('../animation_pst.png', dpi=dpi)
 
 
 #plt.close()

@@ -56,7 +56,7 @@ with open('../def_example.tex', 'w') as fh:
     fh.write(r'\def\SFWdeltaangle{%.3f}' % np.rad2deg(pairs.ds) + '\n')
     fh.write(r'\def\SFWtau{%i}' % tau + '\n')
     fh.write(r'\def\SFWell{%i}' % ell + '\n')
-    fh.write(r'\def\SFWepsilon{%.1f}' % pairs[0].error + '\n')
+    fh.write(r'\def\SFWepsilon{%.2f}' % pairs[0].error + '\n')
     fh.write(r'\def\SFWmuCpri{%i}' % mu  + '\n')
     fh.write(r'\def\SFWnpts{%i}' % points.size + '\n')
     fh.write(r'\def\SFWsdred{%.1f}' % sd_reduction + '\n')
