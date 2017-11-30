@@ -1,8 +1,8 @@
-\documentclass[beamer=true]{standalone}
-\usepackage{pgfplots}
-\input{def_example}
-%
-\begin{document}
+%\documentclass[beamer=true]{standalone}
+%\usepackage{pgfplots}
+%\input{def_example}
+%%
+%\begin{document}
 \begin{tikzpicture}
     \pgfplotstableread{./dat/misfit.dat}\misfit
     \pgfplotsset{axis lines=left, tick label style={font=\tiny}, log ticks with fixed point}
@@ -30,5 +30,5 @@
         \addplot [dashed, mark=*, black, mark options={scale=0.5, solid}] table [x=evd, y=rnd2] \misfit;
     \end{axis}
 \end{tikzpicture}
-\end{document}
+%\end{document}
 

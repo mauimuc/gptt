@@ -1,5 +1,5 @@
 \documentclass[aspectratio=169, t, 10pt,
-    %ignorenonframetext,
+    ignorenonframetext,
     ]{beamer}
 \usetheme{Boadilla}
 \beamertemplatenavigationsymbolsempty
@@ -76,16 +76,17 @@
 
 I am providing new insight into travel time tomography from a correlation based point of view.
 \\
-The objective of my talk is to retrieve the full Bayesian posterior of the velocity model.
+The objective is to retrieve the velocity model posterior to travel time observations.
 \\[2mm]
 
-To carry out a synthetic test a subset of $\SFWnst$ stations of the ScanArray is considered.
+To carry on with a synthetic test a subset of $\SFWnst$ stations of the ScanArray is considered.
 \\
 The reference model is composed of two large scale anomalies.
 \\
-Travel times are generated from that reference model neglecting refraction and dispersion.
+Travel times are generated from that model neglecting refraction and dispersion.
 \\
-The aim of the example is to recover the reference model.
+The aim of the example is to recover the reference model;
+In particular its uncertainties.
 
 
 \begin{frame}
@@ -191,7 +192,7 @@ The chosen covariance is inspired by the squared exponential kernel.
 The characteristic length is $\SFWell \, m$ and the deviation from the mean is $\SFWtau \, \frac ms$.
 \\[2mm]
 
-On the right, the covariance is shown.
+The kernel is depicted on the right.
 \\
 The further two points are apart the less correlated they are.
 \\
@@ -325,7 +326,7 @@ The closer the point of expansion to reality the better the Taylor expansion per
     \end{center}
 \end{frame}
 
-To illustrate the idea, I got a little video for you.
+To illustrate the idea, I prepared a little video.
 \\
 The left hand panel shows how the conditional mean develops.
 \\
@@ -444,7 +445,7 @@ For spherical geometries the usage of a Poisson type kernel is natural.
 \\
 A maximum likelihood estimate appears adequate to guess prior mean and error level.
 \\
-However, the characteristic length may not.
+However, NOT for the characteristic length.
 \\[2mm]
 
 Modeling phase velocities is a potential future application.
