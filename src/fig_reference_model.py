@@ -10,7 +10,7 @@ __license__   = "GPLv3"
 import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon, ListPairs, read_station_file
-from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon
+from plotting import rcParams, prepare_map, lllat, lllon, urlat, urlon, cmap_mu
 from reference import c_act, dt_obs
 
 
@@ -46,7 +46,7 @@ grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon
 c = c_act(grid) # Actual velocity model
 
 # Plot reference model
-ims = m.imshow(c, cmap='seismic', vmin=3900, vmax=4100)
+ims = m.imshow(c, cmap=cmap_mu, vmin=3900, vmax=4100)
 # Make colorbar
 cbar = plt.colorbar(ims, cax=ax_cbr, orientation='horizontal')
 cbar.set_label(r'$^m/_s$')

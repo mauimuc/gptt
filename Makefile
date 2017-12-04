@@ -30,13 +30,16 @@ fig_reference_model.pgf: ./src/fig_reference_model.py ./src/plotting.py ./src/re
 fig_discretization.pgf: ./src/fig_discretization.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_discretization.py
 
+fig_realization_pst.pgf: ./src/fig_realization_pst.py ./dat/example.hdf5 ./src/plotting.py
+	cd src; python fig_realization_pst.py
+
 fig_path_coverage.pgf: ./src/fig_path_coverage.py ./src/plotting.py ./dat/pseudo_data.dat
 	cd src; python fig_path_coverage.py
 
 fig_kernel_pri.pgf: ./src/fig_kernel_pri.py ./src/plotting.py ./par/example.ini
 	cd src; python fig_kernel_pri.py
 
-fig_correlation_pri.pgf: ./src/fig_correlation_pri.py ./src/plotting.py ./par/example.ini
+fig_correlation_pri.pgf: ./src/fig_correlation_pri.py ./src/plotting.py ./par/example.ini  ./dat/pseudo_data.dat
 	cd src; python fig_correlation_pri.py
 
 fig_%.pgf: ./dat/%.hdf5 ./src/fig_posterior.py
@@ -45,10 +48,10 @@ fig_%.pgf: ./dat/%.hdf5 ./src/fig_posterior.py
 fig_correlation_pst.pgf fig_kernel_pst.pgf: ./src/fig_correlation_pst.py ./dat/example.hdf5
 	cd src; python fig_correlation_pst.py
 
-./dat/misfit.dat: ./src/dat_misfit.py ./dat/misfit_all.hdf5 ./dat/misfit_asc.hdf5 ./dat/misfit_dsc.hdf5 ./dat/misfit_rnd.hdf5 ./dat/misfit_rnd2.hdf5
+./dat/misfit.dat: ./src/dat_misfit.py ./dat/misfit_all.hdf5 ./dat/misfit_rnd.hdf5
 	cd src; python dat_misfit.py
 
-presentation.pdf: presentation.tex def_example.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf def_example.tex animation.avi animation_pst.png fig_correlation_pst.pgf ./dat/misfit.dat fig_misfit.tex
+presentation.pdf: presentation.tex def_example.tex fig_reference_model.pgf fig_path_coverage.pgf fig_kernel_pri.pgf fig_correlation_pri.pgf def_example.tex animation.avi animation_pst.png fig_correlation_pst.pgf ./dat/misfit.dat fig_misfit.tex fig_realization_pst.pgf
 	pdflatex presentation
 
 animation.avi animation_pri.png animation_pst.png: ./dat/example.hdf5 ./src/animation.py

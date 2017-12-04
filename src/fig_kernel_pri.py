@@ -10,7 +10,7 @@ __license__   = "GPLv3"
 import numpy as np
 from matplotlib import pyplot as plt
 from gptt import dt_latlon, gauss_kernel
-from plotting import rcParams, prepare_map
+from plotting import rcParams, prepare_map, cmap_sd
 from ConfigParser import ConfigParser
 from reference import dt_obs
 from gptt import read_station_file, ListPairs
@@ -69,12 +69,11 @@ grid = np.rec.fromarrays(np.mgrid[lllat:urlat:N, lllon:urlon:N], dtype=dt_latlon
 # Calculate kernel at the middle point
 K = gauss_kernel(p, grid, tau=tau, ell=ell)
 K = np.ma.masked_less(K, K.max()/50)
-vmax = K.max()
 
 # Plot correlation kernel; pcolor needs points in between
 lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
-pcol = m.pcolormesh(lon, lat, K, latlon=True, cmap='PuOr', rasterized=True, \
-                    vmin=-vmax, vmax=vmax, zorder=1)
+pcol = m.pcolormesh(lon, lat, K, latlon=True, cmap=cmap_sd, rasterized=True, \
+                    vmin=0, vmax=K.max(), zorder=1)
 # Make colorbar
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 cbar.set_label(r'$m^2 s^{-2}$')

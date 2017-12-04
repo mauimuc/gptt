@@ -1,5 +1,5 @@
 \documentclass[aspectratio=169, t, 10pt,
-    ignorenonframetext,
+%    ignorenonframetext,
     ]{beamer}
 \usetheme{Boadilla}
 \beamertemplatenavigationsymbolsempty
@@ -8,6 +8,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage{pgfplots}
+    \usetikzlibrary{shapes, positioning}
 \usepackage{mathtools}
 \mathtoolsset{showonlyrefs}
 \usepackage{qrcode}
@@ -39,32 +40,77 @@
 \frame[noframenumbering, plain]
     {\maketitle}
 
-~
+Looking into the Earth is one of the major applications in seismology.
+\\
+I am going to provide new insight into travel time inversion from a statistical point of view.
+
 
 \begin{frame}
-    \frametitle{Travel Time Tomography}
+    \frametitle{Seismic Tomography}
     \framesubtitle{~}%
 %
 \begin{columns}%
 \column{.55\textwidth}%
 %
     \begin{itemize}
-        \item Bayesian inversion
-        \item Correlation based
-        \item Non parametric
+        \item Credibility increase of the model?
+        \item Statistical significance of structures?
     \end{itemize}
 
-    \begin{exampleblock}{Synthetic test}
+    \begin{center}
+        \large Uncertainties are required to evaluate the model
+    \end{center}
+
+    \begin{exampleblock}{New approach in Travel Time Inversion}
+    \begin{itemize}
+        \item Bayesian inversion
+        \item Correlation based
+        \item Non-parametric
+        \item Computationally inoffensive
+    \end{itemize}
+    \hfill {\large$\leadsto$} Posterior distribution ~
+    \end{exampleblock}
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \input{fig_realization_pst.pgf}
+\end{columns}
+
+\end{frame}
+
+
+Although seismic tomography has widespread applications, credibility is one of the pressing questions.
+\\
+As an example, are those structures of statistical significant or is this just a random realization?
+\\[2mm]
+
+Putting seismic tomography into a rigorous statistical setting may answer that question.
+\\
+To assess uncertainties I am going to introduce a new Bayesian method in travel time inversion.
+\\
+The posterior velocity model is derived using a correlation-based and non-parametric approach at ordinary computational costs.
+
+
+\begin{frame}
+    \frametitle{Synthetic Test}
+    \framesubtitle{proof of concept}%
+%
+\begin{columns}%
+\column{.55\textwidth}%
+%
+
+    \begin{exampleblock}{Setting}
         \begin{itemize}
             \item Large scale anomalies as a reference model
             \item Neglecting dispersion and refraction
             \item Station geometry borrowed from ScanArray
         \end{itemize}
     \end{exampleblock}
+    \medskip
 
     \begin{alertblock}{Infer reference model from travel time obs.}
         Bayesian posterior distribution \\
-        \hfill {\Large $\leadsto$} Location dependent model uncertainties ~
+        \hfill {\large $\leadsto$} Location dependent model uncertainties ~
     \end{alertblock}
 
 \column[T]{.44\textwidth}
@@ -74,19 +120,15 @@
 
 \end{frame}
 
-I am providing new insight into travel time tomography from a correlation based point of view.
+As a demonstration, a subset of $\SFWnst$ stations of the ScanArray is considered.
 \\
-The objective is to retrieve the velocity model posterior to travel time observations.
-\\[2mm]
-
-To carry on with a synthetic test a subset of $\SFWnst$ stations of the ScanArray is considered.
-\\
-The reference model is composed of two large scale anomalies.
+The reference model is composed of two large scale anomalies; approximately 4\% peak to peak.
 \\
 Travel times are generated from that model neglecting refraction and dispersion.
 \\
-The aim of the example is to recover the reference model;
-In particular its uncertainties.
+The aim of the example is to recover the reference model posterior to travel time data.
+\\
+Again, it is the model's uncertainty which is of particular interest.
 
 
 \begin{frame}
@@ -136,9 +178,9 @@ The observational functional is putting an integral constraint on the velocity m
 However, the non-linear relation of travel times and velocity model is a challenge.
 \\[2mm]
 
-In the example, travel times are calculated for all station pairs, totaling to a $\SFWnobs$ records.
+In the example, travel times are calculated for all station pairs.
 \\
-Measurement noise is simulated by drawing from a normal distribution.
+The resulting $\SFWnobs$ records are corrupted by normal noise.
 \\[2mm]
 
 Before going ahead with non-linearity lets have a look at the a\,priori assumptions.
@@ -185,9 +227,9 @@ To express our ignorance, the a\,priori velocity model is assumed a Gaussian ran
 It is fully determined by its mean function and covariance function.
 \\[2mm]
 
-For the example, a constant prior mean of $\SFWmuCpri \, \frac ms$ is used.
+For the example, I basically use a constant mean of $\SFWmuCpri \, \frac ms$.
 \\
-The chosen covariance is inspired by the squared exponential kernel.
+A spherical distance based squared exponential kernel is assumed.
 \\
 The characteristic length is $\SFWell \, m$ and the deviation from the mean is $\SFWtau \, \frac ms$.
 \\[2mm]
@@ -232,22 +274,25 @@ In turn, close by points are likely to share similar velocities.
     \vspace{-10mm}
     \input{fig_correlation_pri.pgf}
     \\ \scriptsize
-    ~~ Correlation of $V(x)$ with $T_C[V]$ kept fix
+    Prior correlation of $V(x)$ with $T_C[V]$ kept fix
 
 \end{columns}
 
 \end{frame}
 
-In case of non-linearities, it is not feasible to calculate the full Bayesian posterior.
+In case of non-linearities, it is not feasible to compute the full Bayesian posterior.
 \\
-To preserve Gaussianity a Taylor expansion around the prior mean function is preformed.
+Therefore, we are looking only at first order fluctuations.
 \\
-The linearization turns correlations and co-variances into explicit formulas.
+A Taylor expansion around the prior mean function turns correlations and co-variances into explicit formulas.
+\\
+The line integrals are solved numerically.
 \\[2mm]
 
-The figure on the right shows what is learned about the medium from a single measurement.
+The figure on the right shows the prior correlation of an observation and the model.
 \\
-In other words: If we consider the travel time for a certain path, the intensity of the color describes its influence on the model.
+It illustrates what is learned about the medium from a single measurement.
+
 
 
 \begin{frame}
@@ -255,26 +300,14 @@ In other words: If we consider the travel time for a certain path, the intensity
     \framesubtitle{Gaussian Process Regression}
 
 \begin{columns}
-\column[t]{.48\textwidth}
+\column[t]{.55\textwidth}
 
-    \begin{block}{Stochastic data model}
-        \begin{equation}
-            D = \mathrm T_C[V] + E \sim \Gauss{\mu_D}{\Sigma_{DD}}
-        \end{equation}
-        \begin{description}[labelwidth=25mm]
-            \item [Error model]        $E\sim \Gauss{0}{\sigma_\varepsilon^2}$
-            \item [Uncertainty]        $\sigma_\varepsilon = \SFWepsilon\,s$
-            \item [Prior travel times] $\mu_D = \Mean{\mathrm T_C[\mu_V]\,}$
-            \item [Covariance matrix]  $\Sigma_{DD} = \Cov{\mathrm T_C}{\mathrm T_{C'}} + \Identity \sigma_\varepsilon^2$
-        \end{description}
-    \end{block}
-
-    \begin{itemize}
-        \item The kernel spans a function space (RKHS)
-        \item Sort out functions incompatible with data
-    \end{itemize}
-
-\column[t]{.48\textwidth}
+    \vspace{-1mm}
+    \begin{description}[labelwidth=25mm]
+        \item [Prior travel times] $\mu_D = \Mean{\mathrm T_C[\mu_V]\,}$
+        \item [Covariance matrix]  $\Sigma_{DD} = \Cov{\mathrm T_C}{\mathrm T_{C'}} + \Identity \sigma_\varepsilon^2$
+    \end{description}
+    \vspace{-1mm}
 
     \begin{exampleblock}{Conditional mean and covariance}
         \setlength\abovedisplayskip{0pt}
@@ -283,7 +316,7 @@ In other words: If we consider the travel time for a certain path, the intensity
             \\
             \Var{V|d}  &= K_V   &&- \Cov VD \Sigma_{DD}^{-1} \Cov DV
         \end{alignat}
-        \hfill {\Large $\leadsto$} Posterior distribution \phantom{p}
+        \hfill $\leadsto$ Posterior distribution ~
     \end{exampleblock}
 
     \begin{alertblock}{Accommodate non-linearity}
@@ -291,33 +324,65 @@ In other words: If we consider the travel time for a certain path, the intensity
             \item Single evidence at a time
             \item Correlations and Variances from predecessor
         \end{itemize}
-        \hfill {\Large $\leadsto$} Successive approach ~
+        \hfill  $\leadsto$ Successive approach ~
     \end{alertblock}
+
+\column[T]{.44\textwidth}
+    \vspace{-5mm} \centering
+    \begin{tikzpicture}[font=\small]
+        \tikzstyle{decision} = [diamond, draw, aspect=2]
+        \tikzstyle{block} = [rectangle, draw, align=center]
+        \tikzstyle{line} = [-latex]
+        \node (pri) [block] {$V_0$};
+        \node [below=2mm of pri] (int) [inner sep=1pt] {\scriptsize i=1};
+        \node [below=3mm of int] (lin) [block] {Linearization \\ \& Quadrature\\ $\mu_{D_i}, \sigma_{D_i}^2, \Cov V{D_i}$};
+        \node [left=8mm of lin]  (dat) [block] {$d_i$};
+        \node [below=5mm of lin] (cnd) [block, fill=green!10] {Conditioning \\ $V|d_i,\dots,d_1$};
+        \node [below=2mm of cnd] (inc) [inner sep=1pt] {\scriptsize i++};
+        \node [right=2cm of inc] (suc) [rotate=90] {succession};
+        \node [below=3mm of inc] (dec) [decision] {$i\neq N$};
+        \node [below=5mm of dec] (pst) [block] {$V|d_N,\dots,d_1$};
+        \node at (dec.east)  [anchor=south west, inner sep=1pt, green] {\scriptsize T};
+        \node at (dec.south) [anchor=north west, inner sep=1pt, red] {\scriptsize F};
+
+        \draw [line] (dat) -- (lin);
+        \draw [line] (lin) -- (cnd);
+        \draw [line] (dec) -| (suc) |- (lin);
+        \draw [line] (pri) -- (int) -- (lin);
+        \draw [line] (cnd) -- (inc) -- (dec);
+        \draw [line] (dec) -- (pst);
+    \end{tikzpicture}
+
+
 
 \end{columns}
 
 \end{frame}
 
-A stochastic data model accounting for normal noise is chosen.
+A data model accounting for normal noise is chosen.
 \\
 Travel times are assumed being accurate at about $\SFWepsilon\,s$.
 \\[2mm]
 
 The posterior distribution is given by conditional mean and covariance.
 \\
-The basic grasp is to narrow down the function space to only those functions that are in accordance with the data.
+This is a non-parametric model in the sense considering a distribution over functions.
+\\
+Neither coefficients nor basis functions are involved.
+\\
+The kernel spans a function space and the conditional is rating down functions incompatible with data.
 \\[2mm]
 
-To accommodate non-linearity I pursue with a successive strategy similar to a Kalman filter.
+To accommodate non-linearity I pursue a successive strategy similar to a Kalman filter.
 \\
-The overall idea is to only incorporate a single evidence at a time.
+At each step only a single evidence is incorporated.
 \\
-The linearization is performed at each step, again and again.
+The linearization and conditioning are performed again and again till the last evidence is caught.
 \\
-Hereby the posterior mean improves gradually.
+While progressing, the posterior mean improves gradually.
 \\
 The closer the point of expansion to reality the better the Taylor expansion performs.
-\\[2mm]
+
 
 \begin{frame}
     \frametitle{Successive Approach}
@@ -339,62 +404,78 @@ The path by path construction can nicely be seen.
 \\
 Both anomalies are captured.
 \\
-The characteristic length is refected by the extent of the patches.
+The characteristic length is reflected by the extent of the patches.
 \\
-Areas of dense ray coverage are showing highes confidence gain.
+Areas of dense ray coverage are showing highest confidence gain.
+\\
+\pgfmathparse{int(round(\SFWsdred/\SFWtau*100))}
+The variance reduction is $\pgfmathresult$\%.
+
+\begin{frame}
+    \frametitle{Results}
+    \framesubtitle{~}
+
+\begin{columns}
+\column{.55\textwidth}%
+
+    \begin{itemize}
+        \item Anomalies caught
+        \item Spatial uncertainty
+        \item Variance reduction $\Delta\sigma = \SFWsdred$
+    \end{itemize}
+
+    \begin{itemize}
+        \item Analogy with sensitivity kernels
+        \item Increase in complexity
+        \item Small scale correlations
+        \item Reduction correlation
+        \item Anti correlation
+    \end{itemize}
+
+
+\column[T]{.44\textwidth}
+    \vspace{-10mm}
+    \centering \scriptsize
+    \only<1>{\input{fig_correlation_pst.pgf} \\
+    Posterior correlation of $V(x)$ with $T_C[V]$ kept fix }
+    \only<2>{\input{fig_correlation_pri.pgf}\\
+    ~~ Prior correlation of $V(x)$ with $T_C[V]$ kept fix }
+\end{columns}
+
+\end{frame}
+
+Correlation of a single travel time measurement with the model posterior to observations.
+\\
 
 
 \begin{frame}
-    \frametitle{Conclusions \phantom{I}I/II}
+    \frametitle{Conclusions}
     \framesubtitle{Assessment of Uncertainties}
 
 \begin{columns}
 \column{.55\textwidth}%
 
-    \begin{itemize}
-        \item Anomalies are captured
-        \item Variance reduction $\Delta\sigma = \SFWsdred$
-        \item Measurement accuracy is dominant factor
-        \item Analogy with sensitivity kernels
-        \item Posterior as superposition
-    \end{itemize}
-
-\column[T]{.44\textwidth}
-    \vspace{-10mm}
-    \only<1>{\input{fig_correlation_pst.pgf}}
-    %\only<2>{\input{fig_correlation_pri.pgf}}
-
-\end{columns}
-
-\end{frame}
-
-
-\begin{frame}
-    \frametitle{Conclusions II/II}
-    \framesubtitle{Data Misfit }
-
-\begin{columns}
-\column{.55\textwidth}%
-    \begin{itemize}
-        \item Data misfit
-            \begin{equation}
-                \phi = (d-\mu_D)^T \Sigma_{DD}^{-1} (d-\mu_D)
-            \end{equation}
-        \item Calculus in the function space view
-        \item Effect of succession order
-        \item Memory intense discretization
-    \end{itemize}
-
     \begin{exampleblock}{Bayesian Posterior Distribution}
-        Accommodates non-linearity
+    \begin{itemize}
+        \item Posterior Covariance \hfill $\leadsto$ \hfill Uncertainties
+        \item Succession \hfill $\leadsto$ \hfill Accommodates non-linearity
+        \item Function space view \hfill $\leadsto$ \hfill Non-Parametric
+    \end{itemize}
     \end{exampleblock}
 
+
 \column[T]{.44\textwidth}
     \vspace{-10mm}
-    \input{fig_misfit}
+    \centering
+    \only{\input{fig_misfit}}
 \end{columns}
 
 \end{frame}
+
+Data misfit
+succession outperforms all-at-once
+Resolution is not limited by a certain parametrization.
+
 
 \begin{frame}
     \frametitle{Outlook \& Next Steps }
@@ -413,9 +494,9 @@ Areas of dense ray coverage are showing highes confidence gain.
         \begin{itemize}
             \item Model phase velocities $v(\omega)$
             \item Use ambient noise records
-            \item Frequency dependent kernel
+            \item Frequency-space dependent kernel
                 \begin{equation}
-                    K(x,\omega; x', \omega') = \, ???
+                    K(x,\omega; x', \omega')
                 \end{equation}
                 accounting for dispersion
         \end{itemize}
@@ -428,15 +509,15 @@ Areas of dense ray coverage are showing highes confidence gain.
         \\
         \tiny Multi-filtered correlogram by courtesy of A.~Mauerberger
     }
-    \only<2>{
-        \vspace{2mm}
-        Follow the project on GitHub
-        \\[6mm]
-        \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}}
-        \\[6mm]
-        \small
-        \href{https://github.com/mauimuc/gptt}{github.com/mauimuc/gptt}
-    }
+    %\only<2>{
+    %    \vspace{2mm}
+    %    Follow the project on GitHub
+    %    \\[6mm]
+    %    \fbox{\qrcode[height=3cm]{https://github.com/mauimuc/gptt}}
+    %    \\[6mm]
+    %    \small
+    %    \href{https://github.com/mauimuc/gptt}{github.com/mauimuc/gptt}
+    %}
 \end{columns}
 
 \end{frame}
@@ -445,7 +526,10 @@ For spherical geometries the usage of a Poisson type kernel is natural.
 \\
 A maximum likelihood estimate appears adequate to guess prior mean and error level.
 \\
-However, NOT for the characteristic length.
+However, a clever strategy is necessary estimting the characteristic length.
+\\
+Implement refraction and
+adjust discretization for changes in the ray path.
 \\[2mm]
 
 Modeling phase velocities is a potential future application.

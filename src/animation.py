@@ -9,11 +9,11 @@ import numpy as np
 from sys import stdout
 from matplotlib import pyplot as plt
 from matplotlib import animation
-from plotting import prepare_map, lllat, lllon, urlat, urlon
+from plotting import prepare_map, lllat, lllon, urlat, urlon, cmap_mu, cmap_sd
 from reference import c_act, dt_latlon
 import h5py
 
-dpi=200
+dpi=150
 
 fh = h5py.File('../dat/example.hdf5', 'r')
 
@@ -36,7 +36,7 @@ mu_vmin = (c_act._v0 - mu_delta).round(0)
 m = prepare_map(ax_mu)
 x, y = m(points['lon'], points['lat'])
 tpc_mu = ax_mu.tripcolor(x, y, mu_C[0,:], \
-    vmin=mu_vmin, vmax=mu_vmax, cmap='seismic', shading='gouraud')
+    vmin=mu_vmin, vmax=mu_vmax, cmap=cmap_mu, shading='gouraud')
 cbar = m.colorbar(tpc_mu, location='bottom')
 cbar.set_ticks( range(mu_vmin.astype(np.int), mu_vmax.astype(np.int), 40)[1:])
 #cbar.set_label('mean')
@@ -54,7 +54,7 @@ cnt = m.contour(grid['lon'], grid['lat'], c, levels=c_act.levels(20), latlon=Tru
 # Subplot right
 m = prepare_map(ax_sd, pls=[0,0,0,0])
 tpc_sd = ax_sd.tripcolor(x, y, sd_C[0,:], \
-    vmin=np.min(sd_C), vmax=np.max(sd_C), cmap='Purples', shading='gouraud')
+    vmin=np.min(sd_C), vmax=np.max(sd_C), cmap=cmap_sd, shading='gouraud')
 cbar = m.colorbar(tpc_sd, location='bottom')
 vmin_sd = np.min(sd_C).round().astype(np.integer)
 vmax_sd = np.max(sd_C).round().astype(np.integer)

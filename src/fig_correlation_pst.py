@@ -10,7 +10,7 @@ __license__   = "GPLv3"
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.integrate import simps
-from plotting import rcParams, prepare_map
+from plotting import rcParams, prepare_map, cmap_cr
 import h5py
 from ConfigParser import ConfigParser
 from reference import dt_obs
@@ -72,7 +72,7 @@ ax_map.text(xs, ys, 's', fontsize=12, horizontalalignment='center', verticalalig
 K = cov_CC[pair.indices,:]
 vmax = np.abs(K[12,:]).max()
 
-pcol = ax_map.tripcolor(x, y, K[12,:], cmap='PuOr', vmin=-vmax, vmax=vmax, rasterized=True, zorder=0)
+pcol = ax_map.tripcolor(x, y, K[12,:], cmap=cmap_cr, vmin=-vmax, vmax=vmax, rasterized=True, zorder=0)
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 cbar.set_ticks(np.linspace(-vmax, vmax, 7)[1:-1].round(-1))
 cbar.solids.set_edgecolor("face")

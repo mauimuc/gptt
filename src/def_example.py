@@ -46,7 +46,9 @@ output_file = config.get('Output', 'filename')
 fh = h5py.File(output_file, 'r')
 
 # Variance reduction
-sd_reduction = np.sqrt(np.subtract(fh['cov_CC_pri'], fh['cov_CC_pst']).diagonal().max())
+sd_pri = np.sqrt(np.diagonal(fh['cov_CC_pri']))
+sd_pst = np.sqrt(np.diagonal(fh['cov_CC_pst']))
+sd_reduction = np.mean(sd_pri - sd_pst)
 
 # Write parameters for being used in the LaTeX document
 with open('../def_example.tex', 'w') as fh:

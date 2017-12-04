@@ -6,6 +6,7 @@ __copyright__ = "Copyright (C) 2017 Stefan Mauerberger"
 __license__   = "GPLv3"
 
 from mpl_toolkits.basemap import Basemap
+from matplotlib import pyplot as plt
 from gptt import read_station_file
 
 # Options
@@ -19,6 +20,10 @@ rcParams = {'text.usetex' : True,
             'pgf.rcfonts': False,
             'axes.linewidth': 0.5,
             }
+
+cmap_cr = plt.cm.PuOr
+cmap_mu = plt.cm.bwr
+cmap_sd = plt.cm.Purples
 
 
 # Read station coordinates

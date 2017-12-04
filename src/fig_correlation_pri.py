@@ -12,8 +12,9 @@ from matplotlib import pyplot as plt
 from gptt import dt_latlon, gauss_kernel, read_station_file, ListPairs
 from reference import dt_obs
 from scipy.integrate import simps
-from plotting import rcParams, prepare_map
+from plotting import rcParams, prepare_map, cmap_sd
 from ConfigParser import ConfigParser
+
 
 # Read parameter file
 config = ConfigParser()
@@ -82,12 +83,11 @@ ax_map.text(xs, ys, 's', fontsize=12, horizontalalignment='center', verticalalig
 # Integrate travel time
 cor_TC = simps(K, dx=pair.spacing, axis=0)
 cor_TC = np.ma.masked_less(cor_TC, cor_TC.max()/50)
-vmax = cor_TC.max()
 
 # Plot correlation kernel; pcolor needs points in between
 lat, lon = np.mgrid[lllat:urlat:N+1j, lllon:urlon:N+1j]
-pcol = m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap='PuOr', rasterized=True, \
-                    vmin=-vmax, vmax=vmax, zorder=0)
+pcol = m.pcolormesh(lon, lat, cor_TC, latlon=True, cmap=cmap_sd, rasterized=True, \
+                    vmin=0, vmax=cor_TC.max(), zorder=0)
 # Make colorbar
 cbar = plt.colorbar(pcol, cax=ax_cbr, orientation='horizontal')
 cbar.solids.set_edgecolor("face")
