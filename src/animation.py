@@ -80,7 +80,7 @@ def animate(i):
 
 
 frames = mu_C.shape[0]
-duration = 40. # s
+duration = 30. # s
 interval = 1000.*duration/frames # ms
 
 anim = animation.FuncAnimation(fig, animate, save_count=0, \

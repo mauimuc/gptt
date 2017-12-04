@@ -61,6 +61,7 @@ I am going to provide new insight into travel time inversion from a statistical 
         \large Uncertainties are required to evaluate the model
     \end{center}
 
+    \onslide<2>{
     \begin{exampleblock}{New approach in Travel Time Inversion}
     \begin{itemize}
         \item Bayesian inversion
@@ -70,6 +71,7 @@ I am going to provide new insight into travel time inversion from a statistical 
     \end{itemize}
     \hfill {\large$\leadsto$} Posterior distribution ~
     \end{exampleblock}
+    }
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
@@ -81,7 +83,7 @@ I am going to provide new insight into travel time inversion from a statistical 
 
 Although seismic tomography has widespread applications, credibility is one of the pressing questions.
 \\
-As an example, are those structures of statistical significant or is this just a random realization?
+As an example, which of those structures are of statistical significant and which are just random effects?
 \\[2mm]
 
 Putting seismic tomography into a rigorous statistical setting may answer that question.
@@ -126,7 +128,7 @@ The reference model is composed of two large scale anomalies; approximately 4\% 
 \\
 Travel times are generated from that model neglecting refraction and dispersion.
 \\
-The aim of the example is to recover the reference model posterior to travel time data.
+The aim of the example is to recover the reference model from travel time observations.
 \\
 Again, it is the model's uncertainty which is of particular interest.
 
@@ -262,7 +264,7 @@ In turn, close by points are likely to share similar velocities.
     \end{equation}
     \end{block}
 
-    \begin{block}{Approximated co-variance}
+    \begin{block}{Approximated covariance}
     \setlength\abovedisplayskip{0pt}
     \begin{equation}
         \Cov{\mathrm T_C[V]}{\mathrm T_{C'}[V]\,} \approx  \int_C \int_{C'} \frac{K_V(r,r')}{\mu_V(r)^2\mu_V(r')^2} \, \mathrm d r \, \mathrm d r'
@@ -282,7 +284,7 @@ In turn, close by points are likely to share similar velocities.
 
 In case of non-linearities, it is not feasible to compute the full Bayesian posterior.
 \\
-Therefore, we are looking only at first order fluctuations.
+Therefore, I am looking only at first order fluctuations.
 \\
 A Taylor expansion around the prior mean function turns correlations and co-variances into explicit formulas.
 \\
@@ -364,7 +366,7 @@ A data model accounting for normal noise is chosen.
 Travel times are assumed being accurate at about $\SFWepsilon\,s$.
 \\[2mm]
 
-The posterior distribution is given by conditional mean and covariance.
+The posterior distribution is determined by conditional mean and covariance.
 \\
 This is a non-parametric model in the sense considering a distribution over functions.
 \\
@@ -391,7 +393,7 @@ The closer the point of expansion to reality the better the Taylor expansion per
     \end{center}
 \end{frame}
 
-To illustrate the idea, I prepared a little video.
+To illustrate that idea, I prepared a little video.
 \\
 The left hand panel shows how the conditional mean develops.
 \\
@@ -409,7 +411,7 @@ The characteristic length is reflected by the extent of the patches.
 Areas of dense ray coverage are showing highest confidence gain.
 \\
 \pgfmathparse{int(round(\SFWsdred/\SFWtau*100))}
-The variance reduction is $\pgfmathresult$\%.
+The mean variance reduction is $\pgfmathresult$\%.
 
 \begin{frame}
     \frametitle{Results}
@@ -419,17 +421,18 @@ The variance reduction is $\pgfmathresult$\%.
 \column{.55\textwidth}%
 
     \begin{itemize}
-        \item Anomalies caught
-        \item Spatial uncertainty
-        \item Variance reduction $\Delta\sigma = \SFWsdred$
+        \item Both anomalies are caught
+        \item Analysis of uncertainties
+        \item Average variance reduction $\Delta\sigma = \SFWsdred \, \frac ms$
     \end{itemize}
+    \smallskip
 
     \begin{itemize}
-        \item Analogy with sensitivity kernels
+        \item Widespread interactions
         \item Increase in complexity
-        \item Small scale correlations
-        \item Reduction correlation
         \item Anti correlation
+        \item Small scale correlations
+        \item Significant reduction
     \end{itemize}
 
 
@@ -437,44 +440,80 @@ The variance reduction is $\pgfmathresult$\%.
     \vspace{-10mm}
     \centering \scriptsize
     \only<1>{\input{fig_correlation_pst.pgf} \\
-    Posterior correlation of $V(x)$ with $T_C[V]$ kept fix }
+    ~ Posterior correlation of $V(x)$ with $T_C[V]$ kept fix }
     \only<2>{\input{fig_correlation_pri.pgf}\\
-    ~~ Prior correlation of $V(x)$ with $T_C[V]$ kept fix }
+    ~~~ Prior correlation of $V(x)$ with $T_C[V]$ kept fix }
 \end{columns}
 
 \end{frame}
 
-Correlation of a single travel time measurement with the model posterior to observations.
+Since there is an analogy with sensitivity kernels lets have a look at one of the correlation pattern.
 \\
+As previously, the figure illustrates the correlation of a single measurement with the model.
+\\
+By comparing the prior and the posterior we can see a couple of remarkable things:
+\\
+There are noticeable interactions across the entire domain.
+\\
+Patterns became quite complex including anti-correlation.
+\\
+Even the extend of features shrunk.
+\\
+Looking at the numbers correlations are reduced by a factor of more than 20.
+
 
 
 \begin{frame}
     \frametitle{Conclusions}
-    \framesubtitle{Assessment of Uncertainties}
 
 \begin{columns}
 \column{.55\textwidth}%
 
+    \begin{center}
+        successive $\leftrightarrow$ all-at-once
+
+        Succession order?
+    \end{center}
+
     \begin{exampleblock}{Bayesian Posterior Distribution}
     \begin{itemize}
-        \item Posterior Covariance \hfill $\leadsto$ \hfill Uncertainties
         \item Succession \hfill $\leadsto$ \hfill Accommodates non-linearity
+        \item Posterior Covariance \hfill $\leadsto$ \hfill Uncertainties
         \item Function space view \hfill $\leadsto$ \hfill Non-Parametric
     \end{itemize}
     \end{exampleblock}
 
 
 \column[T]{.44\textwidth}
-    \vspace{-10mm}
+    \vspace{-6mm}
     \centering
     \only{\input{fig_misfit}}
 \end{columns}
 
 \end{frame}
 
-Data misfit
-succession outperforms all-at-once
-Resolution is not limited by a certain parametrization.
+The diagram on the right shows a comparison of data misfits.
+\\
+Incorporating all the data at once is shown by the blue line.
+\\
+The black line illustrates the decrease for the successive approach.
+\\
+The difference clearly favours for incorporating a single evidence at a time.
+\\
+Is there a preffered order of succession?
+\\[2mm]
+
+Let me conclude:
+\\
+I presented a new method for travel time inversion in a rigorous statistical setting.
+\\
+The observational functional serves to consistently derive correlations.
+\\
+The successive approach outperforms considering all the data at once.
+\\
+The posterior covariance assesses uncertainties.
+\\
+The resolution is not limited by a certain parametrization.
 
 
 \begin{frame}
