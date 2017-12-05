@@ -381,7 +381,7 @@ At each step only a single evidence is incorporated.
 \\
 The linearization and conditioning are performed again and again till the last evidence is caught.
 \\
-While progressing, the posterior mean improves gradually.
+While progressing, the conditional mean improves gradually.
 \\
 The closer the point of expansion to reality the better the Taylor expansion performs.
 
@@ -411,7 +411,7 @@ The characteristic length is reflected by the extent of the patches.
 Areas of dense ray coverage are showing highest confidence gain.
 \\
 \pgfmathparse{int(round(\SFWsdred/\SFWtau*100))}
-The mean variance reduction is $\pgfmathresult$\%.
+The average variance reduction is $\pgfmathresult$\%.
 
 \begin{frame}
     \frametitle{Results}
@@ -447,9 +447,9 @@ The mean variance reduction is $\pgfmathresult$\%.
 
 \end{frame}
 
-Since there is an analogy with sensitivity kernels lets have a look at one of the correlation pattern.
+Since there is an analogy with sensitivity kernels lets have a look at one of the correlation patterns.
 \\
-As previously, the figure illustrates the correlation of a single measurement with the model.
+Posterior to data, the figure illustrates can be learnd about the medium from a single measurement.
 \\
 By comparing the prior and the posterior we can see a couple of remarkable things:
 \\
@@ -457,9 +457,10 @@ There are noticeable interactions across the entire domain.
 \\
 Patterns became quite complex including anti-correlation.
 \\
-Even the extend of features shrunk.
+Even the patern's extends features shrunk.
 \\
-Looking at the numbers correlations are reduced by a factor of more than 20.
+And by looking at the numbers, correlations are reduced by a factor of more than 20.
+i
 
 
 
@@ -472,7 +473,7 @@ Looking at the numbers correlations are reduced by a factor of more than 20.
     \begin{center}
         successive $\leftrightarrow$ all-at-once
 
-        Succession order?
+        ~%Succession order?
     \end{center}
 
     \begin{exampleblock}{Bayesian Posterior Distribution}
