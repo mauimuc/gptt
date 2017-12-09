@@ -14,6 +14,8 @@
 \usepackage{qrcode}
 \usepackage{multimedia}
 
+\newcommand\worries[1]{\textcolor{red}{#1}}
+
 \newcommand\Mean[1]{\mathbb{E}\!\left[#1\right]}
 \newcommand\Var[1]{\mathbb{V}\!\left[#1\right]}
 \newcommand\Cov[2]{\mathrm{Cov}\!\left[#1,#2\right]}
@@ -75,7 +77,10 @@ I am going to provide new insight into travel time inversion from a statistical 
 
 \column[T]{.44\textwidth}
     \vspace{-10mm}
+    \only<1>{
     \input{fig_realization_pst.pgf}
+    }
+    \only<2>{\input{fig_example_sd_V_pst.pgf}}
 \end{columns}
 
 \end{frame}
@@ -88,9 +93,9 @@ As an example, which of those structures are of statistical significant and whic
 
 Putting seismic tomography into a rigorous statistical setting may answer that question.
 \\
-To assess uncertainties I am going to introduce a new Bayesian method in travel time inversion.
+To assess uncertainties I am going to introduce a consistently derived Bayesian method in travel time inversion.
 \\
-The posterior velocity model is derived using a correlation-based and non-parametric approach at ordinary computational costs.
+The posterior velocity model is obtained using a correlation-based and non-parametric approach at ordinary computational costs.
 
 
 \begin{frame}
@@ -447,9 +452,13 @@ The average variance reduction is $\pgfmathresult$\%.
 
 \end{frame}
 
+Still, the posterior showns substantial degrees or freedom.
+\worries{trust region}
+\\[2mm]
+
 Since there is an analogy with sensitivity kernels lets have a look at one of the correlation patterns.
 \\
-Posterior to data, the figure illustrates can be learnd about the medium from a single measurement.
+Posterior to data, the figure illustrates what can be learnd about the medium from a single measurement.
 \\
 By comparing the prior and the posterior we can see a couple of remarkable things:
 \\
@@ -457,10 +466,11 @@ There are noticeable interactions across the entire domain.
 \\
 Patterns became quite complex including anti-correlation.
 \\
-Even the patern's extends features shrunk.
+Even the patern's extends shrunk.
+\worries{Do the posterior scales reflect the arrays resolution?
+This is knowledge gain not a physical uncertaenty. }
 \\
 And by looking at the numbers, correlations are reduced by a factor of more than 20.
-i
 
 
 
@@ -506,7 +516,7 @@ Is there a preffered order of succession?
 
 Let me conclude:
 \\
-I presented a new method for travel time inversion in a rigorous statistical setting.
+I presented a consitantly derived method for travel time inversion in a rigorous statistical setting.
 \\
 The observational functional serves to consistently derive correlations.
 \\
